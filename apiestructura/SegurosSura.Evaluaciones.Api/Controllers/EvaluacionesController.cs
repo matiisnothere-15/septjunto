@@ -42,6 +42,20 @@ public class EvaluacionesController : ControllerBase
         return Ok(evaluacion);
     }
 
+    [HttpPost]
+    public async Task<ActionResult<Guid>> Create([FromBody] CreateEvaluacionCommand command)
+    {
+        try
+        {
+            var evaluacionId = await _mediator.Send(command);
+            return CreatedAtAction(nameof(GetById), new { id = evaluacionId }, evaluacionId);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateEvaluacionCommand command)
     {

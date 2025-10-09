@@ -42,6 +42,20 @@ public class ComplejidadesController : ControllerBase
         return Ok(complejidad);
     }
 
+    [HttpPost]
+    public async Task<ActionResult<Guid>> Create([FromBody] CreateComplejidadCommand command)
+    {
+        try
+        {
+            var complejidadId = await _mediator.Send(command);
+            return CreatedAtAction(nameof(GetById), new { id = complejidadId }, complejidadId);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateComplejidadCommand command)
     {

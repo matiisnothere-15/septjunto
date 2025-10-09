@@ -29,6 +29,7 @@ builder.Services.AddScoped<IComponenteRepository, ComponenteRepository>();
 builder.Services.AddScoped<IComplejidadRepository, ComplejidadRepository>();
 builder.Services.AddScoped<IRelacionComponenteComplejidadRepository, RelacionComponenteComplejidadRepository>();
 builder.Services.AddScoped<IEvaluacionRepository, EvaluacionRepository>();
+builder.Services.AddScoped<IProyectoRepository, ProyectoRepository>();
 
 // MediatR
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
