@@ -1,234 +1,128 @@
-<section class="wrap" *ngIf="evaluacion">
-  <header class="section-header">
-    <h2 class="title">{{ isEditing ? 'Editar Evaluación' : 'Detalle de Evaluación' }}</h2>
-    <div class="toolbar">
-      <button class="btn secondary" type="button" (click)="volver()">
-        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
-        </svg>
-        Volver
-      </button>
-      
-      <button *ngIf="!isEditing" class="btn warning" type="button" (click)="toggleEdit()">
-        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-        </svg>
-        Editar
-      </button>
-      
-      <!-- Botón de descarga -->
-      <button *ngIf="!isEditing" class="btn export-pdf" type="button" (click)="descargarPDF()" title="Descargar evaluación como PDF">
-        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
-        </svg>
-        Descargar
-      </button>
-      
-      <button *ngIf="isEditing" class="btn success" type="button" (click)="guardar(f)" [disabled]="disableGuardar">
-        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-        </svg>
-        Guardar
-      </button>
-      
-      <button *ngIf="isEditing" class="btn secondary" type="button" (click)="toggleEdit()">
-        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41L10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-        </svg>
-        Cancelar
-      </button>
-      
-      <button class="btn danger" type="button" (click)="eliminar()">
-        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-        </svg>
-        Eliminar
-      </button>
-    </div>
-  </header>
-
-  <div class="form-container">
-    <form #f="ngForm" novalidate>
-      <!-- Información General -->
-      <div class="form-section">
-        <h3 class="section-title">
-          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-          </svg>
-          Información General
-        </h3>
+<ng-container *ngIf="vm$ | async as vm">
+  <section class="wrap">
+    <header class="section-header">
+      <h2 class="title">{{ vm.isEditing ? 'Editar Evaluación' : 'Detalle de Evaluación' }}</h2>
+      <div class="toolbar">
+        <a class="btn secondary" routerLink="/">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+          Volver
+        </a>
         
-        <div class="form-row">
-          <div class="form-group">
-            <label for="nombreProyecto" class="lbl">Nombre de la Evaluación</label>
-            <input
-              id="nombreProyecto"
-              [(ngModel)]="nombreProyecto"
-              name="nombreProyecto"
-              placeholder="Ej.: Evaluación Proyecto X"
-              required
-              class="form-input"
-              [readonly]="!isEditing"
-            />
-            <small class="err" *ngIf="touched && !nombreProyecto.trim()">Requerido</small>
-          </div>
-
-          <div class="form-group">
-            <label for="deltaRiesgoPct" class="lbl">Riesgo (%)</label>
-            <input
-              id="deltaRiesgoPct"
-              type="number"
-              [(ngModel)]="deltaRiesgoPctStr"
-              name="deltaRiesgoPct"
-              placeholder="Ej.: 15"
-              min="0" max="100" step="1"
-              class="form-input"
-              [readonly]="!isEditing"
-            />
-            <small class="hint">Opcional. Se aplicará al total de horas.</small>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tareas -->
-      <div class="form-section">
-        <h3 class="section-title">
-          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M19 3H5c-1.1 0-2 .9-2 2v14l4-4h12c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
-          </svg>
-          Tareas del Proyecto
-        </h3>
-        
-        <div class="tasks-container" *ngIf="items.length">
-          <div class="task-item" *ngFor="let it of items; let i = index; trackBy: trackByIdx">
-            <div class="task-header">
-              <span class="task-number">Tarea {{ i + 1 }}</span>
-              <div class="task-actions" *ngIf="isEditing">
-                <button type="button" class="btn-icon add" (click)="addItemBelow(i)" title="Agregar debajo">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
-                  </svg>
-                </button>
-                <button type="button" class="btn-icon del" (click)="removeItem(i)" [disabled]="items.length===1" title="Eliminar tarea">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41L10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                  </svg>
-                </button>
-              </div>
-            </div>
-            
-            <div class="task-fields">
-              <div class="form-group">
-                <label [for]="'comp_'+i" class="lbl">Componente</label>
-                <select [(ngModel)]="items[i].componenteId" [name]="'comp_'+i" required class="form-select" [disabled]="!isEditing">
-                  <option [ngValue]="null" disabled>Selecciona un componente…</option>
-                  <option *ngFor="let c of componentes" [ngValue]="c.id">{{ c.nombre }}</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label [for]="'desc_'+i" class="lbl">Descripción de la Tarea</label>
-                <input
-                  [(ngModel)]="items[i].descripcion"
-                  [name]="'desc_'+i"
-                  placeholder="Describe qué se debe hacer en esta tarea…"
-                  required
-                  class="form-input"
-                  [readonly]="!isEditing"
-                />
-              </div>
-
-              <div class="form-group">
-                <label [for]="'cx_'+i" class="lbl">Complejidad</label>
-                <select [(ngModel)]="items[i].complejidadId" [name]="'cx_'+i" required class="form-select" [disabled]="!isEditing">
-                  <option [ngValue]="null" disabled>Selecciona complejidad…</option>
-                  <option *ngFor="let c of complejidades" [ngValue]="c.id">{{ c.nombre }}</option>
-                </select>
-                <small class="hint" *ngIf="items[i].componenteId && items[i].complejidadId">
-                  <strong>{{ getNombreComponente(items[i].componenteId) }}</strong> - 
-                  <span class="complexity-badge {{ getClaseComplejidad(items[i].complejidadId) }}">{{ getNombreComplejidad(items[i].complejidadId) }}</span>: 
-                  {{ getHorasTarea(items[i]) }} horas = {{ getDiasTarea(items[i]) }} días
-                </small>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="add-task" *ngIf="isEditing">
-          <button type="button" class="btn primary" (click)="addItem()">
-            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
-            </svg>
-            Agregar Nueva Tarea
-          </button>
-        </div>
-      </div>
-
-      <!-- Resumen -->
-      <div class="form-section summary">
-        <h3 class="section-title">
-          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M19 3H5c-1.1 0-2 .9-2 2v14l4-4h12c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
-          </svg>
-          Resumen de la Evaluación
-        </h3>
-        
-        <div class="summary-grid">
-          <div class="summary-item">
-            <span class="summary-label">Total de Horas:</span>
-            <span class="summary-value">{{ totalHoras }} hrs</span>
-          </div>
-          <div class="summary-item" *ngIf="deltaRiesgoPct !== undefined">
-            <span class="summary-label">Con Riesgo ({{ deltaRiesgoPct }}%):</span>
-            <span class="summary-value risk">{{ totalConRiesgo }} hrs</span>
-          </div>
-          <div class="summary-item">
-            <span class="summary-label">Días Estimados:</span>
-            <span class="summary-value">{{ diasEstimados }} días</span>
-          </div>
-          <div class="summary-item">
-            <span class="summary-label">Fecha de Creación:</span>
-            <span class="summary-value">{{ evaluacion.fecha | date:'dd/MM/yyyy HH:mm' }}</span>
-          </div>
-        </div>
-      </div>
-    </form>
-  </div>
-</section>
-
-<!-- Estado de carga -->
-<div class="loading" *ngIf="!evaluacion">
-  <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-  </svg>
-  <p>Cargando evaluación...</p>
-</div>
-
-  <!-- Modal de confirmación para eliminar -->
-  <div class="modal-overlay" *ngIf="mostrarModalEliminar" (click)="cerrarModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>Confirmar Eliminación</h3>
-        <button class="modal-close" (click)="cerrarModal()" aria-label="Cerrar">
-          <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
-            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-          </svg>
+        <button *ngIf="!vm.isEditing" class="btn warning" type="button" (click)="toggleEdit(true, vm.evaluacion)">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+          Editar
         </button>
-      </div>
-      
-      <div class="modal-body">
-        <p>¿Estás seguro de que quieres eliminar la evaluación <strong>"{{ evaluacion?.nombreProyecto }}"</strong>?</p>
-        <p class="warning-text">⚠️ Esta acción no se puede deshacer.</p>
-      </div>
-      
-      <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="cerrarModal()">Cancelar</button>
-        <button class="btn btn-danger" (click)="confirmarEliminar()">
-          <svg viewBox="0 0 24 24" class="ico" aria-hidden="true">
-            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-          </svg>
+
+        <button *ngIf="!vm.isEditing" class="btn export-pdf" type="button" (click)="descargarPDF(vm.evaluacion)" title="Descargar evaluación como PDF">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          Descargar
+        </button>
+
+        <button *ngIf="vm.isEditing" class="btn success" type="button" (click)="guardar(vm.evaluacion)" [disabled]="vm.isFormInvalid">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          Guardar
+        </button>
+
+        <button *ngIf="vm.isEditing" class="btn secondary" type="button" (click)="toggleEdit(false, vm.evaluacion)">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41L10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          Cancelar
+        </button>
+
+        <button class="btn danger" type="button" (click)="showDeleteModal(true)">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
           Eliminar
         </button>
       </div>
+    </header>
+
+    <div class="form-container">
+      <form #f="ngForm" novalidate>
+        <!-- General Info -->
+        <div class="form-section">
+          <h3 class="section-title">Información General</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nombreProyecto" class="lbl">Nombre de la Evaluación</label>
+              <input id="nombreProyecto" [ngModel]="vm.nombreProyecto" (ngModelChange)="onNombreProyectoChange($event)" name="nombreProyecto" required class="form-input" [readonly]="!vm.isEditing"/>
+              <small class="err" *ngIf="vm.touched && !vm.nombreProyecto.trim()">Requerido</small>
+            </div>
+            <div class="form-group">
+              <label for="deltaRiesgoPct" class="lbl">Riesgo (%)</label>
+              <input id="deltaRiesgoPct" type="number" [ngModel]="vm.deltaRiesgoPct" (ngModelChange)="onDeltaRiesgoChange($event)" name="deltaRiesgoPct" min="0" max="100" step="1" class="form-input" [readonly]="!vm.isEditing"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tasks -->
+        <div class="form-section">
+          <h3 class="section-title">Tareas del Proyecto</h3>
+          <div class="tasks-container" *ngIf="vm.items.length">
+            <div class="task-item" *ngFor="let it of vm.items; let i = index; trackBy: trackById">
+              <div class="task-header">
+                <span class="task-number">Tarea {{ i + 1 }}</span>
+                <div class="task-actions" *ngIf="vm.isEditing">
+                  <button type="button" class="btn-icon add" (click)="addItem(i)" title="Agregar debajo"><svg viewBox="0 0 24 24"><path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z"/></svg></button>
+                  <button type="button" class="btn-icon del" (click)="removeItem(i)" [disabled]="vm.items.length===1" title="Eliminar tarea"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41L10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+                </div>
+              </div>
+              <div class="task-fields">
+                <div class="form-group">
+                  <label [for]="'comp_'+i" class="lbl">Componente</label>
+                  <select [(ngModel)]="vm.items[i].componenteId" (ngModelChange)="onItemChange()" [name]="'comp_'+i" required class="form-select" [disabled]="!vm.isEditing">
+                    <option [ngValue]="null" disabled>Selecciona...</option>
+                    <option *ngFor="let c of vm.componentes" [ngValue]="c.id">{{ c.nombre }}</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label [for]="'desc_'+i" class="lbl">Descripción</label>
+                  <input [(ngModel)]="vm.items[i].descripcion" (ngModelChange)="onItemChange()" [name]="'desc_'+i" required class="form-input" [readonly]="!vm.isEditing"/>
+                </div>
+                <div class="form-group">
+                  <label [for]="'cx_'+i" class="lbl">Complejidad</label>
+                  <select [(ngModel)]="vm.items[i].complejidadId" (ngModelChange)="onItemChange()" [name]="'cx_'+i" required class="form-select" [disabled]="!vm.isEditing">
+                    <option [ngValue]="null" disabled>Selecciona...</option>
+                    <option *ngFor="let c of vm.complejidades" [ngValue]="c.id">{{ c.nombre }}</option>
+                  </select>
+                  <small class="hint" *ngIf="it.componenteId && it.complejidadId">
+                    <strong>{{ getNombreComponente(it.componenteId, vm.componentes) }}</strong> -
+                    <span class="complexity-badge {{ getClaseComplejidad(it.complejidadId, vm.complejidades) }}">{{ getNombreComplejidad(it.complejidadId, vm.complejidades) }}</span>:
+                    {{ getHorasTarea(it, vm.relaciones) }}h = {{ getDiasTarea(it, vm.relaciones) }}d
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="form-section summary">
+          <h3 class="section-title">Resumen</h3>
+          <div class="summary-grid">
+            <div class="summary-item"><span class="summary-label">Total Horas:</span><span class="summary-value">{{ vm.summary.totalHoras }} hrs</span></div>
+            <div class="summary-item" *ngIf="vm.deltaRiesgoPct !== undefined"><span class="summary-label">Con Riesgo ({{ vm.deltaRiesgoPct }}%):</span><span class="summary-value risk">{{ vm.summary.totalConRiesgo }} hrs</span></div>
+            <div class="summary-item"><span class="summary-label">Días Estimados:</span><span class="summary-value">{{ vm.summary.diasEstimados }} días</span></div>
+            <div class="summary-item"><span class="summary-label">Fecha:</span><span class="summary-value">{{ vm.evaluacion.fecha | date:'dd/MM/yyyy HH:mm' }}</span></div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- Loading State -->
+  <div class="loading" *ngIf="vm.loading"><p>Cargando...</p></div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="vm.showDeleteModal" (click)="showDeleteModal(false)">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header"><h3>Confirmar Eliminación</h3></div>
+      <div class="modal-body">
+        <p>¿Estás seguro de que quieres eliminar la evaluación <strong>"{{ vm.evaluacion.nombreProyecto }}"</strong>?</p>
+        <p class="warning-text">⚠️ Esta acción no se puede deshacer.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="showDeleteModal(false)">Cancelar</button>
+        <button class="btn btn-danger" (click)="confirmarEliminar(vm.evaluacion.id)">Eliminar</button>
+      </div>
     </div>
   </div>
+</ng-container>

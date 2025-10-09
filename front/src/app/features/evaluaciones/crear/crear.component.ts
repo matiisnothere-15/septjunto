@@ -1,222 +1,189 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { DataService } from '../../../shared/data.service';
+import { Componente, Complejidad, RelacionCC } from '../../../shared/models';
+import { Observable, BehaviorSubject, combineLatest, of } from 'rxjs';
+import { map, startWith, switchMap, catchError, tap } from 'rxjs/operators';
 
-type ItemEval = {
+interface ItemEval {
+  id: number; // Unique ID for trackBy
   componenteId: string | null;
   descripcion: string;
   complejidadId: string | null;
-};
+}
+
+interface Summary {
+  totalHoras: number;
+  totalConRiesgo: number | null;
+  diasEstimados: number;
+}
+
+interface ViewModel {
+  items: ItemEval[];
+  nombreProyecto: string;
+  deltaRiesgoPct: number | undefined;
+  touched: boolean;
+  componentes: Componente[];
+  complejidades: Complejidad[];
+  relaciones: RelacionCC[];
+  summary: Summary;
+  isFormInvalid: boolean;
+  loading: boolean;
+  error: string | null;
+}
 
 @Component({
   selector: 'app-evaluaciones-crear',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './crear.component.html',
   styleUrls: ['./crear.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CrearComponent {
-  // Cabecera
-  nombreProyecto = '';
-  touched = false;
-  
-  // Math para usar en template
-  Math = Math;
+  private dataService = inject(DataService);
+  private router = inject(Router);
 
-  // Riesgo como string y getter normalizado
-  deltaRiesgoPctStr = '';
-  get deltaRiesgoPct(): number | undefined {
-    const n = Number(this.deltaRiesgoPctStr);
-    return Number.isFinite(n) ? Math.max(0, Math.min(100, Math.trunc(n))) : undefined;
+  private state = {
+    items$: new BehaviorSubject<ItemEval[]>([this.createEmptyItem()]),
+    nombreProyecto$: new BehaviorSubject<string>(''),
+    deltaRiesgoPct$: new BehaviorSubject<number | undefined>(undefined),
+    touched$: new BehaviorSubject<boolean>(false),
+  };
+
+  vm$: Observable<ViewModel>;
+
+  constructor() {
+    const componentes$ = this.dataService.getComponentes().pipe(catchError(() => of([] as Componente[])));
+    const complejidades$ = this.dataService.getComplejidades().pipe(catchError(() => of([] as Complejidad[])));
+    const relaciones$ = this.dataService.getRelaciones().pipe(catchError(() => of([] as RelacionCC[])));
+
+    const summary$ = combineLatest([
+      this.state.items$,
+      this.state.deltaRiesgoPct$,
+      relaciones$
+    ]).pipe(
+      map(([items, riesgo, relaciones]) => this.calculateSummary(items, riesgo, relaciones)),
+      startWith({ totalHoras: 0, totalConRiesgo: null, diasEstimados: 0 })
+    );
+
+    this.vm$ = combineLatest({
+      items: this.state.items$,
+      nombreProyecto: this.state.nombreProyecto$,
+      deltaRiesgoPct: this.state.deltaRiesgoPct$,
+      touched: this.state.touched$,
+      componentes: componentes$,
+      complejidades: complejidades$,
+      relaciones: relaciones$,
+      summary: summary$,
+    }).pipe(
+      map(vm => ({
+        ...vm,
+        isFormInvalid: this.isFormInvalid(vm.nombreProyecto, vm.items),
+        loading: false,
+        error: null,
+      }))
+    );
   }
 
-  // Catálogo desde DataService
-  componentes: any[] = [];
-  complejidades: any[] = [];
-
-  // Grilla: SIEMPRE iniciamos con 1 fila vacía
-  items: ItemEval[] = [
-    { componenteId: null, descripcion: '', complejidadId: null }
-  ];
-
-  constructor(
-    private dataService: DataService,
-    private router: Router
-  ) {
-    this.loadCatalogos();
+  onNombreProyectoChange(nombre: string) { this.state.nombreProyecto$.next(nombre); }
+  onDeltaRiesgoChange(value: string) {
+    const n = Number(value);
+    const riesgo = Number.isFinite(n) ? Math.max(0, Math.min(100, Math.trunc(n))) : undefined;
+    this.state.deltaRiesgoPct$.next(riesgo);
   }
 
-  private loadCatalogos() {
-    console.log('🔄 Cargando catálogos...');
-    this.componentes = this.dataService.getComponentes();
-    this.complejidades = this.dataService.getComplejidades();
-    console.log(`✅ Componentes cargados: ${this.componentes.length}`);
-    console.log(`✅ Complejidades cargadas: ${this.complejidades.length}`);
-    
-    // Si no hay datos, forzar recarga automática
-    if (this.componentes.length === 0 || this.complejidades.length === 0) {
-      console.log('⚠️ Datos faltantes, forzando recarga automática...');
-      this.dataService.forzarRecargaComponentesBasicos();
-      this.componentes = this.dataService.getComponentes();
-      this.complejidades = this.dataService.getComplejidades();
-      console.log(`✅ Recarga automática completada: ${this.componentes.length} componentes, ${this.complejidades.length} complejidades`);
-    }
+  onItemChange() {
+    this.state.items$.next(this.state.items$.getValue());
   }
 
-  // Estados UI
-  get disableGuardar(): boolean {
-    const nombreOk = this.nombreProyecto.trim().length > 0;
-    const filasOk =
-      this.items.length > 0 &&
-      this.items.every(it =>
-        it.componenteId &&
-        it.descripcion.trim().length > 0 &&
-        it.complejidadId
-      );
-    return !(nombreOk && filasOk);
+  addItem(i: number): void {
+    const currentItems = this.state.items$.getValue();
+    currentItems.splice(i + 1, 0, this.createEmptyItem());
+    this.state.items$.next(currentItems);
   }
 
-  // Agregar al final una fila vacía
-  addItem(): void {
-    this.items.push({ componenteId: null, descripcion: '', complejidadId: null });
-    this.recalcularResumen(); // Actualizar resumen inmediatamente
-  }
-
-  // Insertar debajo de la fila i
-  addItemBelow(i: number): void {
-    this.items.splice(i + 1, 0, { componenteId: null, descripcion: '', complejidadId: null });
-    this.recalcularResumen(); // Actualizar resumen inmediatamente
-  }
-
-  // Eliminar (dejando al menos una)
   removeItem(i: number): void {
-    if (this.items.length > 1) this.items.splice(i, 1);
-    this.recalcularResumen(); // Actualizar resumen inmediatamente
-  }
-
-  trackByIdx = (i: number) => i;
-
-  // ===== Cálculos =====
-  get totalHoras(): number {
-    let total = 0;
-    for (const it of this.items) {
-      if (!it.componenteId || !it.complejidadId) continue;
-      const base = this.dataService.horasDePar(it.componenteId, it.complejidadId);
-      total += base;
+    const currentItems = this.state.items$.getValue();
+    if (currentItems.length > 1) {
+      currentItems.splice(i, 1);
+      this.state.items$.next(currentItems);
     }
-    return Math.round(total);
   }
 
-  get totalConRiesgo(): number | null {
-    if (this.deltaRiesgoPct === undefined) return null;
-    return Math.round(this.totalHoras * (1 + this.deltaRiesgoPct / 100));
+  crear(): void {
+    this.state.touched$.next(true);
+
+    const nombreProyecto = this.state.nombreProyecto$.getValue();
+    const items = this.state.items$.getValue();
+
+    if (this.isFormInvalid(nombreProyecto, items)) return;
+
+    const commandItems = items
+      .filter(it => it.componenteId && it.descripcion.trim() && it.complejidadId)
+      .map(it => ({
+        componenteId: it.componenteId!,
+        complejidadId: it.complejidadId!,
+        descripcionTarea: it.descripcion.trim()
+      }));
+
+    this.dataService.createEvaluacion(
+      nombreProyecto.trim(),
+      this.state.deltaRiesgoPct$.getValue(),
+      commandItems
+    ).pipe(
+      tap(evaluacionId => this.router.navigate(['/evaluaciones', evaluacionId])),
+      catchError(err => {
+        console.error('Error al crear evaluación:', err);
+        return of(null);
+      })
+    ).subscribe();
   }
 
-  get diasEstimados(): number {
-    // Si hay riesgo, usar horas con riesgo; sino usar horas base
-    const horasParaCalcular = this.totalConRiesgo || this.totalHoras;
-    return Math.ceil(horasParaCalcular / 6); // 6 horas = 1 día laboral
-  }
+  trackById = (i: number, item: ItemEval) => item.id;
 
-  // Obtener horas de una tarea específica
-  getHorasTarea(item: ItemEval): number {
+  // --- Template Helpers ---
+  getHorasTarea(item: ItemEval, relaciones: RelacionCC[]): number {
     if (!item.componenteId || !item.complejidadId) return 0;
-    return this.dataService.horasDePar(item.componenteId, item.complejidadId);
+    const rel = relaciones.find(r => r.componenteId === item.componenteId && r.complejidadId === item.complejidadId);
+    return rel ? rel.horas : 0;
   }
 
-  // Obtener días estimados de una tarea específica
-  getDiasTarea(item: ItemEval): number {
-    const horas = this.getHorasTarea(item);
-    return Math.ceil(horas / 6); // 6 horas = 1 día laboral
+  getDiasTarea(item: ItemEval, relaciones: RelacionCC[]): number {
+    return Math.ceil(this.getHorasTarea(item, relaciones) / 6);
   }
 
-  // Obtener nombre del componente
-  getNombreComponente(componenteId: string | null): string {
-    if (!componenteId) return '';
-    const componente = this.componentes.find(c => c.id === componenteId);
-    return componente ? componente.nombre : '';
+  getNombreComponente(componenteId: string | null, componentes: Componente[]): string {
+    const comp = componentes.find(c => c.id === componenteId);
+    return comp ? comp.nombre : '';
   }
 
-  // Obtener nombre de la complejidad
-  getNombreComplejidad(complejidadId: string | null): string {
-    if (!complejidadId) return '';
-    const complejidad = this.complejidades.find(c => c.id === complejidadId);
-    return complejidad ? complejidad.nombre : '';
+  getNombreComplejidad(complejidadId: string | null, complejidades: Complejidad[]): string {
+    const compx = complejidades.find(c => c.id === complejidadId);
+    return compx ? compx.nombre : '';
   }
 
-  // Obtener clase CSS para el badge de complejidad basado en el orden
-  getClaseComplejidad(complejidadId: string | null): string {
-    if (!complejidadId) return '';
-    const complejidad = this.complejidades.find(c => c.id === complejidadId);
-    if (!complejidad) return '';
-    
-    // Mapear el orden de la complejidad a la clase CSS correspondiente
-    switch (complejidad.orden) {
-      case 1: return 'complexity-1'; // Muy Baja
-      case 2: return 'complexity-2'; // Baja
-      case 3: return 'complexity-3'; // Media
-      case 4: return 'complexity-4'; // Alta
-      case 5: return 'complexity-5'; // Muy Alta
-      default: return 'complexity-3'; // Default a Media
-    }
+  getClaseComplejidad(complejidadId: string | null, complejidades: Complejidad[]): string {
+    const compx = complejidades.find(c => c.id === complejidadId);
+    if (!compx) return '';
+    return `complexity-${compx.orden}`;
   }
 
-  // ===== Guardar =====
-  crear(formRef: NgForm): void {
-    this.touched = true;
-    if (this.disableGuardar) return;
-
-    try {
-      const items = this.items
-        .filter(it => it.componenteId && it.descripcion.trim() && it.complejidadId)
-        .map(it => ({
-          componenteId: it.componenteId!,
-          complejidadId: it.complejidadId!,
-          descripcionTarea: it.descripcion.trim()
-        }));
-
-      const evaluacionId = this.dataService.createEvaluacion(
-        this.nombreProyecto.trim(),
-        this.deltaRiesgoPct,
-        items
-      );
-
-      // Navegar a la evaluación creada
-      this.router.navigate(['/evaluaciones', evaluacionId]);
-    } catch (error) {
-      console.error('Error al crear evaluación:', error);
-      // Aquí podrías mostrar un mensaje de error al usuario
-    }
+  // --- Private Helpers ---
+  private createEmptyItem(): ItemEval {
+    return { id: Date.now() + Math.random(), componenteId: null, descripcion: '', complejidadId: null };
   }
 
-  // Debug helper
-  get itemsConDatos(): number {
-    return this.items.filter(it => it.componenteId && it.complejidadId).length;
+  private isFormInvalid(nombreProyecto: string, items: ItemEval[]): boolean {
+    return !nombreProyecto.trim() || !items.length || items.some(it => !it.componenteId || !it.descripcion.trim() || !it.complejidadId);
   }
 
-  // ===== Resumen en Tiempo Real =====
-  recalcularResumen(): void {
-    // Forzar la detección de cambios de Angular
-    // Esto hará que los getters se ejecuten nuevamente
-    console.log('🔄 Resumen recalculado en tiempo real');
+  private calculateSummary(items: ItemEval[], riesgo: number | undefined, relaciones: RelacionCC[]): Summary {
+    const totalHoras = items.reduce((total, it) => total + this.getHorasTarea(it, relaciones), 0);
+    const totalConRiesgo = riesgo !== undefined ? Math.round(totalHoras * (1 + riesgo / 100)) : null;
+    const diasEstimados = Math.ceil((totalConRiesgo ?? totalHoras) / 6);
+    return { totalHoras: Math.round(totalHoras), totalConRiesgo, diasEstimados };
   }
-
-  // Método para forzar recarga de componentes básicos
-  forzarRecargaComponentes(): void {
-    this.dataService.forzarRecargaComponentesBasicos();
-    this.loadCatalogos(); // Recargar catálogos
-    console.log('✅ Componentes básicos recargados');
-  }
-
-  // Método para forzar recarga completa
-  forzarRecargaCompleta(): void {
-    this.dataService.forzarRecargaCompleta();
-    this.loadCatalogos(); // Recargar catálogos
-    console.log('✅ Recarga completa realizada');
-  }
-
-
-
 }

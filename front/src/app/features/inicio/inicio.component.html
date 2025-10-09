@@ -8,7 +8,7 @@
       <!-- búsqueda -->
       <label class="search" aria-label="Buscar proyecto">
         <svg viewBox="0 0 24 24" class="ico" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-        <input type="search" [(ngModel)]="q" placeholder="Buscar por nombre..." />
+        <input type="search" [ngModel]="q" (ngModelChange)="onSearchChange($event)" placeholder="Buscar por nombre..." />
       </label>
 
 
@@ -16,44 +16,46 @@
   </header>
 
   <!-- Grid tarjetas -->
-  <section *ngIf="items.length; else vacio" class="grid" role="list">
-    <a
-      class="card"
-      *ngFor="let p of items"
-      [routerLink]="['/evaluaciones', p.id]"
-      role="listitem"
-      aria-label="Abrir evaluación de {{ p.nombre }}"
-    >
-      <div class="thumb" aria-hidden="true">
-        <div class="img"></div>
-      </div>
-
-              <div class="card-body">
-        <h3 class="card-title">{{ p.nombre }}</h3>
-        <div class="card-meta">
-          <span class="meta-item">
-            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-            </svg>
-            {{ p.diasEstimados }} días
-          </span>
-          <span class="meta-item">
-            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-            </svg>
-            {{ p.horasTotales }} hrs
-          </span>
-          <span class="meta-item" *ngIf="p.riesgo > 0">
-            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-            </svg>
-            Riesgo: {{ p.riesgo }}%
-          </span>
+  <ng-container *ngIf="(proyectos$ | async) as proyectos; else loading">
+    <section *ngIf="proyectos.length > 0; else vacio" class="grid" role="list">
+      <a
+        class="card"
+        *ngFor="let p of proyectos"
+        [routerLink]="['/evaluaciones', p.id]"
+        role="listitem"
+        aria-label="Abrir evaluación de {{ p.nombre }}"
+      >
+        <div class="thumb" aria-hidden="true">
+          <div class="img"></div>
         </div>
-        <p class="card-date">{{ formatearFecha(p.fecha) }}</p>
-      </div>
-    </a>
-  </section>
+
+                <div class="card-body">
+          <h3 class="card-title">{{ p.nombre }}</h3>
+          <div class="card-meta">
+            <span class="meta-item">
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+              {{ p.diasEstimados }} días
+            </span>
+            <span class="meta-item">
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+              {{ p.horasTotales }} hrs
+            </span>
+            <span class="meta-item" *ngIf="p.riesgo > 0">
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+              Riesgo: {{ p.riesgo }}%
+            </span>
+          </div>
+          <p class="card-date">{{ formatearFecha(p.fecha) }}</p>
+        </div>
+      </a>
+    </section>
+  </ng-container>
 
   <!-- Estado vacío -->
   <ng-template #vacio>
@@ -65,6 +67,13 @@
       <a routerLink="/evaluaciones/crear" class="btn">Crear evaluación</a>
     </div>
   </ng-template>
+
+  <ng-template #loading>
+    <div class="empty">
+      <p>Cargando proyectos...</p>
+    </div>
+  </ng-template>
+
 
   <!-- FAB -->
   <button class="fab" (click)="crearNuevo()" aria-label="Crear nueva evaluación">

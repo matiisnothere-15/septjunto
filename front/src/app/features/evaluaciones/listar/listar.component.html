@@ -3,52 +3,60 @@
     <h2>Evaluaciones</h2>
     <a routerLink="/evaluaciones/crear" class="btn primary">+ Nueva evaluación</a>
   </header>
-  
-  <div class="evaluaciones-grid" *ngIf="items?.length; else vacio">
-    <div class="evaluacion-card" *ngFor="let e of items">
-      <div class="card-header">
-        <h3 class="proyecto-nombre">
-          <a [routerLink]="['/evaluaciones', e.id]">{{ e.nombre }}</a>
-        </h3>
-        <span class="fecha">{{ e.fecha | date:'dd/MM/yyyy' }}</span>
-      </div>
-      
-      <div class="card-content">
-        <p class="descripcion">{{ e.descripcion }}</p>
+
+  <ng-container *ngIf="items$ | async as items; else loading">
+    <div class="evaluaciones-grid" *ngIf="items.length > 0; else vacio">
+      <div class="evaluacion-card" *ngFor="let e of items">
+        <div class="card-header">
+          <h3 class="proyecto-nombre">
+            <a [routerLink]="['/evaluaciones', e.id]">{{ e.nombre }}</a>
+          </h3>
+          <span class="fecha">{{ formatearFecha(e.fecha) }}</span>
+        </div>
         
-        <div class="metricas">
-          <div class="metrica">
-            <span class="label">Horas:</span>
-            <span class="valor">{{ e.horasTotales }} hrs</span>
+        <div class="card-content">
+          <p class="descripcion">{{ e.descripcion }}</p>
+
+          <div class="metricas">
+            <div class="metrica">
+              <span class="label">Horas:</span>
+              <span class="valor">{{ e.horasTotales }} hrs</span>
+            </div>
+            <div class="metrica">
+              <span class="label">Días:</span>
+              <span class="valor dias">{{ e.diasEstimados }} días</span>
+            </div>
+            <div class="metrica" *ngIf="e.riesgo > 0">
+              <span class="label">Riesgo:</span>
+              <span class="valor riesgo">+{{ e.riesgo }}%</span>
+            </div>
           </div>
-          <div class="metrica">
-            <span class="label">Días:</span>
-            <span class="valor dias">{{ e.diasEstimados }} días</span>
-          </div>
-          <div class="metrica" *ngIf="e.riesgo > 0">
-            <span class="label">Riesgo:</span>
-            <span class="valor riesgo">+{{ e.riesgo }}%</span>
+
+          <div class="componentes" *ngIf="e.componentes?.length">
+            <span class="label">Componentes:</span>
+            <div class="tags">
+              <span class="tag" *ngFor="let comp of e.componentes">{{ comp }}</span>
+            </div>
           </div>
         </div>
         
-        <div class="componentes" *ngIf="e.componentes.length">
-          <span class="label">Componentes:</span>
-          <div class="tags">
-            <span class="tag" *ngFor="let comp of e.componentes">{{ comp }}</span>
-          </div>
+        <div class="card-actions">
+          <a [routerLink]="['/evaluaciones', e.id]" class="btn secondary">Ver Detalle</a>
         </div>
-      </div>
-      
-      <div class="card-actions">
-        <a [routerLink]="['/evaluaciones', e.id]" class="btn secondary">Ver Detalle</a>
       </div>
     </div>
-  </div>
-  
-  <ng-template #vacio>
+
+    <ng-template #vacio>
+      <div class="empty-state">
+        <p class="muted">No hay evaluaciones creadas.</p>
+        <a routerLink="/evaluaciones/crear" class="btn primary">Crear Primera Evaluación</a>
+      </div>
+    </ng-template>
+  </ng-container>
+
+  <ng-template #loading>
     <div class="empty-state">
-      <p class="muted">No hay evaluaciones creadas.</p>
-      <a routerLink="/evaluaciones/crear" class="btn primary">Crear Primera Evaluación</a>
+      <p>Cargando evaluaciones...</p>
     </div>
   </ng-template>
 </section>
