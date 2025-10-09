@@ -1,0 +1,102 @@
+:root{
+  /* Paleta principal */
+  --sura-azul: #2D6DF6;   /* Azul vivo */
+  --sura-blanco: #FFFFFF; /* Blanco puro */
+
+  /* Complementaria */
+  --sura-azul-sura: #0033A0;
+  --sura-amarillo: #E3E829;
+  --sura-aqua: #00AEC7;
+  --sura-gris: #888B8D;
+
+  /* UI neutrales */
+  --ui-bg: #F6F7F9;
+  --ui-border: #E9EDF5;
+  --ui-text: #212121;
+}
+
+/* === Sura Sans Variable Font === */
+@font-face {
+  font-family: 'Sura Sans VF';
+  src: url('assets/fonts/sura-sans-vf/SuraSansVF.ttf') format('truetype-variations');
+  font-weight: 100 900; /* rango completo */
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sura Sans VF';
+  src: url('assets/fonts/sura-sans-vf/SuraSans-ItalicaVF.ttf') format('truetype-variations');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Aplicación global */
+html, body{
+  font-family: 'Sura Sans VF', Arial, Helvetica, sans-serif;
+  color: var(--ui-text);
+  background: var(--ui-bg);
+  margin: 0;
+}
+
+/* Estilos globales para menús desplegables */
+.dropdown-menu {
+  position: fixed !important;
+  z-index: 9999 !important;
+  min-width: 160px;
+  background: white;
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  overflow: hidden;
+  font-family: 'Sura Sans VF', sans-serif;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: white;
+  color: #333;
+  font-family: 'Sura Sans VF', sans-serif;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background: color-mix(in srgb, var(--sura-azul) 5%, white);
+  }
+  
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--ui-border);
+  }
+  
+  &.dropdown-item--danger {
+    color: #dc3545;
+    
+    &:hover {
+      background: color-mix(in srgb, #dc3545 5%, white);
+    }
+  }
+  
+  .icon {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+  }
+}
+
+/* === Configuración de páginas === */
+app-componentes,
+app-complejidades,
+app-relaciones {
+  display: block;
+  width: 100%;
+  min-height: 100vh;
+  background: var(--ui-bg);
+}

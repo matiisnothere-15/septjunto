@@ -1,0 +1,130 @@
+<div class="page">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <h1 class="title">Componentes</h1>
+      <button 
+        class="btn btn--primary btn--add" 
+        (click)="mostrarFormulario = true"
+        aria-label="Agregar nuevo componente"
+      >
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+        </svg>
+        Agregar Componente
+      </button>
+    </div>
+    
+    <!-- Formulario de agregar/editar -->
+    <form class="form" *ngIf="mostrarFormulario" (ngSubmit)="agregarComponente()" (input)="limpiarMensajes()">
+      <input
+        type="text"
+        [(ngModel)]="nuevoComponente"
+        name="nuevoComponente"
+        [placeholder]="editando ? 'Editar componente…' : 'Nuevo componente…'"
+        aria-label="Nombre del componente"
+        class="input"
+        maxlength="100"
+      />
+      <div class="form-actions">
+        <button type="submit" class="btn btn--primary" [disabled]="!nuevoComponente.trim()">
+          {{ editando ? 'Actualizar' : 'Guardar' }}
+        </button>
+        <button type="button" class="btn btn--ghost" (click)="cancelarFormulario()">
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </header>
+
+  <!-- Mensajes de estado -->
+  <div class="messages" *ngIf="error || success">
+    <div class="alert alert--error" *ngIf="error">
+      {{ error }}
+    </div>
+    <div class="alert alert--success" *ngIf="success">
+      {{ success }}
+    </div>
+  </div>
+
+  <!-- Tabla de componentes -->
+  <div class="table-container" *ngIf="componentes.length">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let componente of componentesPaginados">
+          <td>{{ componente.nombre }}</td>
+          <td>
+            <button
+              type="button"
+              class="btn btn--ghost btn--icon"
+              (click)="toggleMenu(componente.id, $event)"
+              aria-label="Más opciones para {{ componente.nombre }}"
+            >
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+              </svg>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginación -->
+  <div class="pagination" *ngIf="totalPaginas > 1">
+    <button 
+      class="btn btn--ghost btn--pagination" 
+      [disabled]="paginaActual === 1"
+      (click)="cambiarPagina(paginaActual - 1)"
+      aria-label="Página anterior"
+    >
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+      </svg>
+    </button>
+    
+    <div class="pagination-numbers">
+      <button 
+        *ngFor="let pagina of paginasVisibles" 
+        class="btn btn--pagination"
+        [class.btn--pagination--active]="pagina === paginaActual"
+        (click)="cambiarPagina(pagina)"
+        [attr.aria-label]="'Ir a página ' + pagina"
+      >
+        {{ pagina }}
+      </button>
+    </div>
+    
+    <button 
+      class="btn btn--ghost btn--pagination" 
+      [disabled]="paginaActual === totalPaginas"
+      (click)="cambiarPagina(paginaActual + 1)"
+      aria-label="Página siguiente"
+    >
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Información de paginación -->
+  <div class="pagination-info" *ngIf="componentes.length > 0">
+    <p>
+      Mostrando {{ (paginaActual - 1) * elementosPorPagina + 1 }} - 
+      {{ Math.min(paginaActual * elementosPorPagina, componentes.length) }} 
+      de {{ componentes.length }} componentes
+    </p>
+  </div>
+
+  <!-- Estado vacío -->
+  <div class="empty" *ngIf="!componentes.length">
+    <p>No hay componentes configurados.</p>
+    <p>Agrega el primer componente usando el botón de arriba.</p>
+  </div>
+</div>

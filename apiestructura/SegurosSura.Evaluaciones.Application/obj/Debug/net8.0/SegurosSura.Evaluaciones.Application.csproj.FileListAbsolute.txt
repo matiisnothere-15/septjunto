@@ -1,0 +1,15 @@
+C:\Users\aepmriquelme\Downloads\SEPT JUNTO\apiestructura\SegurosSura.Evaluaciones.Application\bin\Debug\net8.0\SegurosSura.Evaluaciones.Application.deps.json
+C:\Users\aepmriquelme\Downloads\SEPT JUNTO\apiestructura\SegurosSura.Evaluaciones.Application\bin\Debug\net8.0\SegurosSura.Evaluaciones.Application.dll
+C:\Users\aepmriquelme\Downloads\SEPT JUNTO\apiestructura\SegurosSura.Evaluaciones.Application\bin\Debug\net8.0\SegurosSura.Evaluaciones.Application.pdb
+C:\Users\aepmriquelme\Downloads\SEPT JUNTO\apiestructura\SegurosSura.Evaluaciones.Application\bin\Debug\net8.0\SegurosSura.Evaluaciones.Domain.dll
+C:\Users\aepmriquelme\Downloads\SEPT JUNTO\apiestructura\SegurosSura.Evaluaciones.Application\bin\Debug\net8.0\SegurosSura.Evaluaciones.Domain.pdb
+C:\Users\aepmriquelme\Downloads\SEPT JUNTO\apiestructura\SegurosSura.Evaluaciones.Application\obj\Debug\net8.0\SegurosSura.Evaluaciones.Application.csproj.AssemblyReference.cache
+C:\Users\aepmriquelme\Downloads\SEPT JUNTO\apiestructura\SegurosSura.Evaluaciones.Application\obj\Debug\net8.0\SegurosSura.Evaluaciones.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\aepmriquelme\Downloads\SEPT JUNTO\apiestructura\SegurosSura.Evaluaciones.Application\obj\Debug\net8.0\SegurosSura.Evaluaciones.Application.AssemblyInfoInputs.cache
+C:\Users\aepmriquelme\Downloads\SEPT JUNTO\apiestructura\SegurosSura.Evaluaciones.Application\obj\Debug\net8.0\SegurosSura.Evaluaciones.Application.AssemblyInfo.cs
+C:\Users\aepmriquelme\Downloads\SEPT JUNTO\apiestructura\SegurosSura.Evaluaciones.Application\obj\Debug\net8.0\SegurosSura.Evaluaciones.Application.csproj.CoreCompileInputs.cache
+C:\Users\aepmriquelme\Downloads\SEPT JUNTO\apiestructura\SegurosSura.Evaluaciones.Application\obj\Debug\net8.0\SegurosS.760B61FB.Up2Date
+C:\Users\aepmriquelme\Downloads\SEPT JUNTO\apiestructura\SegurosSura.Evaluaciones.Application\obj\Debug\net8.0\SegurosSura.Evaluaciones.Application.dll
+C:\Users\aepmriquelme\Downloads\SEPT JUNTO\apiestructura\SegurosSura.Evaluaciones.Application\obj\Debug\net8.0\refint\SegurosSura.Evaluaciones.Application.dll
+C:\Users\aepmriquelme\Downloads\SEPT JUNTO\apiestructura\SegurosSura.Evaluaciones.Application\obj\Debug\net8.0\SegurosSura.Evaluaciones.Application.pdb
+C:\Users\aepmriquelme\Downloads\SEPT JUNTO\apiestructura\SegurosSura.Evaluaciones.Application\obj\Debug\net8.0\ref\SegurosSura.Evaluaciones.Application.dll

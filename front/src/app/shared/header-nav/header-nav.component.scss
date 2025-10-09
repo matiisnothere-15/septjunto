@@ -1,0 +1,65 @@
+.topbar {
+  position: sticky;   
+  top: 0;            
+  z-index: 1000;     
+  background: var(--sura-azul);
+  border-bottom: 4px solid var(--sura-azul);
+  padding: 8px 16px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  box-shadow: 0 2px 0 rgba(0,0,0,.03); 
+  
+}
+
+.logo {
+
+  background: url('/assets/Logo_Negativo.png') center / contain no-repeat;
+  .logo {
+  width: 140px;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+
+}
+
+.brand .logo {
+  height: 48px; 
+  object-fit: contain;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 600;
+  background: #EEF3FF;
+  border: 1px solid #DFE8FF;
+  color: #294BA6;
+}
+.chip--active {
+  background: var(--sura-amarillo);
+  border-color: #D5F24F;
+  color: #384100;
+}
+.icon-btn {
+  margin-left: 6px;
+  border: none;
+  width: 40px;      
+  height: 40px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  color: var(--sura-azul);  
+  background: var(--sura-amarillo);
+  justify-content: center;
+}
+.icon-btn:hover { background: #f0f3f8; }

@@ -1,0 +1,89 @@
+<div class="page">
+  <!-- Header -->
+  <header class="header">
+    <h1 class="title">Complejidades</h1>
+    
+    <!-- Botón de emergencia para limpiar datos -->
+    <div class="emergency-actions">
+      <button 
+        type="button" 
+        class="btn btn--danger btn--small"
+        (click)="limpiarYRecrearDatos()"
+        title="Limpiar y recrear todos los datos básicos (útil cuando hay problemas de relaciones)"
+      >
+        🧹 Limpiar Datos
+      </button>
+    </div>
+    
+    <!-- Formulario de agregar -->
+    <form class="form" (ngSubmit)="agregarComplejidad()" (input)="limpiarMensajes()">
+      <input
+        type="text"
+        [(ngModel)]="nuevaComplejidad"
+        name="nuevaComplejidad"
+        placeholder="Nombre de la complejidad"
+        aria-label="Nombre de la nueva complejidad"
+        class="input"
+        maxlength="100"
+      />
+      <input
+        type="number"
+        [(ngModel)]="nuevoOrden"
+        name="nuevoOrden"
+        placeholder="Orden"
+        aria-label="Orden de la complejidad"
+        class="input"
+        min="1"
+        max="999"
+      />
+      <button type="submit" class="btn" [disabled]="!nuevaComplejidad.trim() || nuevoOrden < 1">
+        Agregar
+      </button>
+    </form>
+  </header>
+
+  <!-- Mensajes de estado -->
+  <div class="messages" *ngIf="error || success">
+    <div class="alert alert--error" *ngIf="error">
+      {{ error }}
+    </div>
+    <div class="alert alert--success" *ngIf="success">
+      {{ success }}
+    </div>
+  </div>
+
+  <!-- Tabla de complejidades -->
+  <div class="table-container" *ngIf="complejidades.length">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Orden</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let complejidad of complejidades">
+          <td>{{ complejidad.nombre }}</td>
+          <td>{{ complejidad.orden }}</td>
+          <td>
+            <button
+              type="button"
+              class="btn btn--ghost btn--danger"
+              (click)="eliminarComplejidad(complejidad.id)"
+              aria-label="Eliminar complejidad {{ complejidad.nombre }}"
+            >
+              Eliminar
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Estado vacío -->
+  <div class="empty" *ngIf="!complejidades.length">
+    <p>No hay complejidades configuradas.</p>
+    <p>Agrega la primera complejidad usando el formulario de arriba.</p>
+  </div>
+</div>

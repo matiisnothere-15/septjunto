@@ -1,0 +1,103 @@
+<div class="page">
+  <!-- Header -->
+  <header class="header">
+    <h1 class="title">Relaciones</h1>
+    
+    <!-- Formulario de agregar/editar -->
+    <form class="form" (ngSubmit)="guardarRelacion()" (input)="limpiarMensajes()">
+      <select
+        [(ngModel)]="componenteSeleccionado"
+        name="componenteSeleccionado"
+        aria-label="Seleccionar componente"
+        class="input"
+        required
+      >
+        <option [ngValue]="null" disabled>Seleccionar componente</option>
+        <option *ngFor="let componente of componentes" [ngValue]="componente.id">
+          {{ componente.nombre }}
+        </option>
+      </select>
+      
+      <select
+        [(ngModel)]="complejidadSeleccionada"
+        name="complejidadSeleccionada"
+        aria-label="Seleccionar complejidad"
+        class="input"
+        required
+      >
+        <option [ngValue]="null" disabled>Seleccionar complejidad</option>
+        <option *ngFor="let complejidad of complejidades" [ngValue]="complejidad.id">
+          {{ complejidad.nombre }} ({{ complejidad.orden }})
+        </option>
+      </select>
+      
+      <input
+        type="number"
+        [(ngModel)]="horas"
+        name="horas"
+        placeholder="Horas"
+        aria-label="Número de horas"
+        class="input"
+        min="0.5"
+        max="999"
+        step="0.5"
+        required
+      />
+      
+      <button 
+        type="submit" 
+        class="btn" 
+        [disabled]="!componenteSeleccionado || !complejidadSeleccionada || horas <= 0"
+      >
+        Guardar
+      </button>
+    </form>
+  </header>
+
+  <!-- Mensajes de estado -->
+  <div class="messages" *ngIf="error || success">
+    <div class="alert alert--error" *ngIf="error">
+      {{ error }}
+    </div>
+    <div class="alert alert--success" *ngIf="success">
+      {{ success }}
+    </div>
+  </div>
+
+  <!-- Tabla de relaciones -->
+  <div class="table-container" *ngIf="relaciones.length">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Componente</th>
+          <th>Complejidad</th>
+          <th>Horas</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let relacion of relaciones">
+          <td>{{ nombreComponente(relacion.componenteId) }}</td>
+          <td>{{ nombreComplejidad(relacion.complejidadId) }}</td>
+          <td>{{ relacion.horas }}</td>
+          <td>
+            <button
+              type="button"
+              class="btn btn--ghost btn--danger"
+              (click)="eliminarRelacion(relacion.id)"
+              aria-label="Eliminar relación {{ nombreComponente(relacion.componenteId) }} - {{ nombreComplejidad(relacion.complejidadId) }}"
+            >
+              Eliminar
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Estado vacío -->
+  <div class="empty" *ngIf="!relaciones.length">
+    <p>No hay relaciones configuradas.</p>
+    <p>Agrega la primera relación usando el formulario de arriba.</p>
+  </div>
+</div>

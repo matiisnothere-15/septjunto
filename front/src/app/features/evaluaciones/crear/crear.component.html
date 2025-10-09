@@ -1,0 +1,181 @@
+<section class="wrap">
+  <header class="section-header">
+    <h2 class="title">Crear Nueva Evaluación</h2>
+    <div class="toolbar">
+      <button class="btn secondary" type="button" routerLink="/evaluaciones/listar">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+        </svg>
+        Ver Evaluaciones
+      </button>
+      <button class="btn primary" type="button" (click)="addItem()">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+        </svg>
+        Agregar Tarea
+      </button>
+              <button class="btn success" type="button" (click)="crear(f)" [disabled]="disableGuardar">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+          </svg>
+          Guardar Evaluación
+        </button>
+    </div>
+  </header>
+
+  <div class="form-container">
+    <form #f="ngForm" novalidate>
+      <!-- Información General -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+          </svg>
+          Información General
+        </h3>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="nombreProyecto" class="lbl">Nombre de la Evaluación</label>
+            <input
+              id="nombreProyecto"
+              [(ngModel)]="nombreProyecto"
+              name="nombreProyecto"
+              placeholder="Ej.: Evaluación Proyecto X"
+              required
+              class="form-input"
+            />
+            <small class="err" *ngIf="touched && !nombreProyecto.trim()">Requerido</small>
+          </div>
+
+          <div class="form-group">
+            <label for="deltaRiesgoPct" class="lbl">Riesgo (%)</label>
+            <input
+              id="deltaRiesgoPct"
+              type="number"
+              [(ngModel)]="deltaRiesgoPctStr"
+              name="deltaRiesgoPct"
+              placeholder="Ej.: 15"
+              min="0" max="100" step="1"
+              class="form-input"
+              (ngModelChange)="recalcularResumen()"
+            />
+            <small class="hint">Opcional. Se aplicará al total de horas.</small>
+          </div>
+        </div>
+      </div>
+
+
+
+      <!-- Tareas -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14l4-4h12c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
+          </svg>
+          Tareas del Proyecto
+        </h3>
+        
+        <div class="tasks-container" *ngIf="items.length">
+          <div class="task-item" *ngFor="let it of items; let i = index; trackBy: trackByIdx">
+            <div class="task-header">
+              <span class="task-number">Tarea {{ i + 1 }}</span>
+              <div class="task-actions">
+                <button type="button" class="btn-icon add" (click)="addItemBelow(i)" title="Agregar debajo">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+                  </svg>
+                </button>
+                <button type="button" class="btn-icon del" (click)="removeItem(i)" [disabled]="items.length===1" title="Eliminar tarea">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41L10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <div class="task-fields">
+              <div class="form-group">
+                <label [for]="'comp_'+i" class="lbl">Componente</label>
+                <select [(ngModel)]="items[i].componenteId" [name]="'comp_'+i" required class="form-select" (ngModelChange)="recalcularResumen()">
+                  <option [ngValue]="null" disabled>Selecciona un componente…</option>
+                  <option *ngFor="let c of componentes" [ngValue]="c.id">{{ c.nombre }}</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label [for]="'desc_'+i" class="lbl">Descripción de la Tarea</label>
+                <input
+                  [(ngModel)]="items[i].descripcion"
+                  [name]="'desc_'+i"
+                  placeholder="Describe qué se debe hacer en esta tarea…"
+                  required
+                  class="form-input"
+                />
+              </div>
+
+              <div class="form-group">
+                <label [for]="'cx_'+i" class="lbl">Complejidad</label>
+                <select [(ngModel)]="items[i].complejidadId" [name]="'cx_'+i" required class="form-select" (ngModelChange)="recalcularResumen()">
+                  <option [ngValue]="null" disabled>Selecciona complejidad…</option>
+                  <option *ngFor="let c of complejidades" [ngValue]="c.id">{{ c.nombre }}</option>
+                </select>
+                <small class="hint" *ngIf="items[i].componenteId && items[i].complejidadId">
+                  <strong>{{ getNombreComponente(items[i].componenteId) }}</strong> - 
+                  <span class="complexity-badge {{ getClaseComplejidad(items[i].complejidadId) }}">{{ getNombreComplejidad(items[i].complejidadId) }}</span>: 
+                  {{ getHorasTarea(items[i]) }} horas = {{ getDiasTarea(items[i]) }} días
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumen -->
+      <div class="form-section summary" *ngIf="items.length">
+        <h3 class="section-title">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14l4-4h12c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
+          </svg>
+          Resumen de la Evaluación
+        </h3>
+        
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span class="summary-label">Total de Horas:</span>
+            <span class="summary-value">{{ totalHoras }} hrs</span>
+          </div>
+          <div class="summary-item" *ngIf="deltaRiesgoPct !== undefined">
+            <span class="summary-label">Con Riesgo ({{ deltaRiesgoPct }}%):</span>
+            <span class="summary-value risk">{{ totalConRiesgo }} hrs</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Días Estimados:</span>
+            <span class="summary-value">{{ diasEstimados }} días</span>
+          </div>
+        </div>
+        
+        <!-- Botón temporal para forzar recarga de componentes básicos -->
+        <div class="recalc-section" *ngIf="!componentes.length || !complejidades.length">
+          <button class="btn warning" type="button" (click)="forzarRecargaComponentes()" title="Forzar recarga de componentes básicos">
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+            </svg>
+            Recargar Componentes Básicos
+          </button>
+          
+          <button class="btn danger" type="button" (click)="forzarRecargaCompleta()" title="Forzar recarga completa (más agresivo)">
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+            </svg>
+            Recarga Completa (Si persiste el problema)
+          </button>
+          
+          <small class="hint">Usar solo si no aparecen los componentes o complejidades al cargar la página</small>
+        </div>
+        
+
+      </div>
+    </form>
+  </div>
+</section>

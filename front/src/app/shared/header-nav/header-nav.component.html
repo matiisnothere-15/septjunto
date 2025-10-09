@@ -1,0 +1,26 @@
+<header class="topbar">
+  <div class="brand">
+    <img src="/Logo_Negativo.png" alt="Logo" class="logo">
+  </div>
+
+  <nav class="nav">
+    <a routerLink="/" routerLinkActive="chip--active" class="chip" [routerLinkActiveOptions]="{ exact: true }">Inicio</a>
+    <a routerLink="/evaluaciones" routerLinkActive="chip--active" class="chip">Evaluaciones</a>
+    <a routerLink="/configuracion" routerLinkActive="chip--active" class="chip">Configuración</a>
+
+    <button class="icon-btn" title="Perfil">
+      <svg viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true" role="img"
+          width="48" height="48"> <!-- antes eran 24px -->
+          
+        <circle cx="12" cy="10" r="3"
+                fill="none" stroke="currentColor" stroke-width="2" 
+                stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M6 18c0-3 2.7-5 6-5s6 2 6 5"
+              fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </nav>
+</header>

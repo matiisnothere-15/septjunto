@@ -1,0 +1,48 @@
+.topbar {
+  background: #fff;
+  border-bottom: 4px solid var(--sura-azul);
+  padding: 8px 16px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.03);
+}
+
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand .logo {
+  background: var(--sura-azul);
+  color: #fff;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+.brand .url { color: #777; font-size: 12px; }
+
+.nav { display: flex; align-items: center; gap: 8px; }
+.chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 600;
+  background: #EEF3FF;
+  border: 1px solid #DFE8FF;
+  color: #294BA6;
+}
+.chip--active {
+  background: var(--sura-amarillo);
+  border-color: #D5F24F;
+  color: #384100;
+}
+
+.icon-btn {
+  margin-left: 6px;
+  border: none;
+  background: transparent;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.icon-btn:hover { background: #f0f3f8; }

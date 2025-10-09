@@ -1,0 +1,321 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Api\\SegurosSura.Evaluaciones.Api.csproj": {}
+  },
+  "projects": {
+    "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Api\\SegurosSura.Evaluaciones.Api.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Api\\SegurosSura.Evaluaciones.Api.csproj",
+        "projectName": "SegurosSura.Evaluaciones.Api",
+        "projectPath": "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Api\\SegurosSura.Evaluaciones.Api.csproj",
+        "packagesPath": "C:\\Users\\aepmriquelme\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Api\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\aepmriquelme\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Application\\SegurosSura.Evaluaciones.Application.csproj": {
+                "projectPath": "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Application\\SegurosSura.Evaluaciones.Application.csproj"
+              },
+              "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Infrastructure\\SegurosSura.Evaluaciones.Infrastructure.csproj": {
+                "projectPath": "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Infrastructure\\SegurosSura.Evaluaciones.Infrastructure.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "FluentValidation.AspNetCore": {
+              "target": "Package",
+              "version": "[11.3.0, )"
+            },
+            "MediatR": {
+              "target": "Package",
+              "version": "[12.2.0, )"
+            },
+            "Microsoft.AspNetCore.OpenApi": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[6.5.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.414/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Application\\SegurosSura.Evaluaciones.Application.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Application\\SegurosSura.Evaluaciones.Application.csproj",
+        "projectName": "SegurosSura.Evaluaciones.Application",
+        "projectPath": "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Application\\SegurosSura.Evaluaciones.Application.csproj",
+        "packagesPath": "C:\\Users\\aepmriquelme\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Application\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\aepmriquelme\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Domain\\SegurosSura.Evaluaciones.Domain.csproj": {
+                "projectPath": "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Domain\\SegurosSura.Evaluaciones.Domain.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "FluentValidation": {
+              "target": "Package",
+              "version": "[11.8.1, )"
+            },
+            "FluentValidation.DependencyInjectionExtensions": {
+              "target": "Package",
+              "version": "[11.8.1, )"
+            },
+            "MediatR": {
+              "target": "Package",
+              "version": "[12.2.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.414/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Domain\\SegurosSura.Evaluaciones.Domain.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Domain\\SegurosSura.Evaluaciones.Domain.csproj",
+        "projectName": "SegurosSura.Evaluaciones.Domain",
+        "projectPath": "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Domain\\SegurosSura.Evaluaciones.Domain.csproj",
+        "packagesPath": "C:\\Users\\aepmriquelme\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Domain\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\aepmriquelme\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "System.ComponentModel.Annotations": {
+              "target": "Package",
+              "version": "[5.0.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.414/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Infrastructure\\SegurosSura.Evaluaciones.Infrastructure.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Infrastructure\\SegurosSura.Evaluaciones.Infrastructure.csproj",
+        "projectName": "SegurosSura.Evaluaciones.Infrastructure",
+        "projectPath": "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Infrastructure\\SegurosSura.Evaluaciones.Infrastructure.csproj",
+        "packagesPath": "C:\\Users\\aepmriquelme\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Infrastructure\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\aepmriquelme\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Application\\SegurosSura.Evaluaciones.Application.csproj": {
+                "projectPath": "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Application\\SegurosSura.Evaluaciones.Application.csproj"
+              },
+              "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Domain\\SegurosSura.Evaluaciones.Domain.csproj": {
+                "projectPath": "C:\\Users\\aepmriquelme\\Downloads\\SEPT JUNTO\\apiestructura\\SegurosSura.Evaluaciones.Domain\\SegurosSura.Evaluaciones.Domain.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Microsoft.EntityFrameworkCore.SqlServer": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Microsoft.EntityFrameworkCore.Tools": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.414/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
