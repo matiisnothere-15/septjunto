@@ -5,5 +5,6 @@ namespace SegurosSura.Evaluaciones.Application.Componentes.Commands.Create;
 
 public record CreateComponenteCommand(
     string Nombre,
-    string Descripcion = ""
+    string Descripcion = "",
+    Guid? ProyectoId = null
 ) : IRequest<Guid>;

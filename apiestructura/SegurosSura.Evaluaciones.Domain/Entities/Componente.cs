@@ -17,6 +17,11 @@ public class Componente
     [Required]
     public bool Activo { get; set; } = true;
     
+    // FK requerido según la BD: cada componente pertenece a un proyecto
+    [Required]
+    public Guid ProyectoId { get; set; }
+    public virtual Proyecto? Proyecto { get; set; }
+    
     // Relaciones
     public virtual ICollection<RelacionComponenteComplejidad> RelacionesComplejidad { get; set; } = new List<RelacionComponenteComplejidad>();
     public virtual ICollection<EvaluacionDetalle> EvaluacionDetalles { get; set; } = new List<EvaluacionDetalle>();

@@ -20,9 +20,13 @@ public class EvaluacionesDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        // Establecer el esquema por defecto
+        modelBuilder.HasDefaultSchema("Proyectos");
+
         // Configuración de Proyecto
         modelBuilder.Entity<Proyecto>(entity =>
         {
+            entity.ToTable("TBL_Proyecto");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Nombre).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Descripcion).HasMaxLength(1000);
@@ -35,17 +39,25 @@ public class EvaluacionesDbContext : DbContext
         // Configuración de Componente
         modelBuilder.Entity<Componente>(entity =>
         {
+            entity.ToTable("TBL_Componente");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Nombre).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Descripcion).HasMaxLength(500);
             entity.Property(e => e.Activo).IsRequired();
+            entity.Property(e => e.ProyectoId).IsRequired();
             
             entity.HasIndex(e => e.Nombre).IsUnique();
+
+            entity.HasOne(e => e.Proyecto)
+                  .WithMany(p => p.Componentes)
+                  .HasForeignKey(e => e.ProyectoId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
         // Configuración de Complejidad
         modelBuilder.Entity<Complejidad>(entity =>
         {
+            entity.ToTable("TBL_Complejidad");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Nombre).IsRequired().HasMaxLength(50);
             entity.Property(e => e.Orden).IsRequired();
@@ -58,6 +70,7 @@ public class EvaluacionesDbContext : DbContext
         // Configuración de RelacionComponenteComplejidad
         modelBuilder.Entity<RelacionComponenteComplejidad>(entity =>
         {
+            entity.ToTable("TBL_RelacionCC");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Horas).IsRequired().HasColumnType("decimal(18,2)");
             
@@ -77,17 +90,21 @@ public class EvaluacionesDbContext : DbContext
         // Configuración de Evaluacion
         modelBuilder.Entity<Evaluacion>(entity =>
         {
+            entity.ToTable("TBL_Evaluacion");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Fecha).IsRequired();
-            entity.Property(e => e.NombreProyecto).IsRequired().HasMaxLength(200);
+            // La BD existente no tiene la columna NombreProyecto; Ignorar para evitar errores en consultas.
+            entity.Ignore(e => e.NombreProyecto);
             entity.Property(e => e.DeltaRiesgoPct).HasColumnType("decimal(18,2)");
-            entity.Property(e => e.HorasTotales).IsRequired().HasColumnType("decimal(18,2)");
+            // La BD existente no tiene HorasTotales; Ignorar para evitar errores en consultas.
+            entity.Ignore(e => e.HorasTotales);
             entity.Property(e => e.HorasTotalesConRiesgo).HasColumnType("decimal(18,2)");
         });
 
         // Configuración de EvaluacionDetalle
         modelBuilder.Entity<EvaluacionDetalle>(entity =>
         {
+            entity.ToTable("TBL_EvaluacionDetalle");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.HorasBase).IsRequired().HasColumnType("decimal(18,2)");
             entity.Property(e => e.DescripcionTarea).IsRequired().HasMaxLength(500);

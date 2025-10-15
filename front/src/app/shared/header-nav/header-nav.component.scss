@@ -13,21 +13,13 @@
 }
 
 .logo {
-
-  background: url('/assets/Logo_Negativo.png') center / contain no-repeat;
-  .logo {
   width: 140px;
   height: auto;
   display: block;
   object-fit: contain;
 }
 
-}
-
-.brand .logo {
-  height: 48px; 
-  object-fit: contain;
-}
+.brand .logo { height: 48px; }
 
 .nav {
   display: flex;

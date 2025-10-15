@@ -8,10 +8,12 @@ namespace SegurosSura.Evaluaciones.Application.Componentes.Commands.Update;
 public class UpdateComponenteCommandHandler : IRequestHandler<UpdateComponenteCommand>
 {
     private readonly IComponenteRepository _componenteRepository;
+    private readonly IProyectoRepository _proyectoRepository;
 
-    public UpdateComponenteCommandHandler(IComponenteRepository componenteRepository)
+    public UpdateComponenteCommandHandler(IComponenteRepository componenteRepository, IProyectoRepository proyectoRepository)
     {
         _componenteRepository = componenteRepository;
+        _proyectoRepository = proyectoRepository;
     }
 
     public async Task Handle(UpdateComponenteCommand request, CancellationToken cancellationToken)
@@ -31,6 +33,16 @@ public class UpdateComponenteCommandHandler : IRequestHandler<UpdateComponenteCo
 
         componente.Nombre = request.Nombre;
         componente.Descripcion = request.Descripcion;
+
+        if (request.ProyectoId.HasValue)
+        {
+            var proyecto = await _proyectoRepository.GetByIdAsync(request.ProyectoId.Value);
+            if (proyecto == null)
+            {
+                throw new EntityNotFoundException("Proyecto", request.ProyectoId.Value);
+            }
+            componente.ProyectoId = request.ProyectoId.Value;
+        }
 
         await _componenteRepository.UpdateAsync(componente);
     }

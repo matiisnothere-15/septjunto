@@ -1,0 +1,40 @@
+# Dotnet
+**/bin/
+**/obj/
+*.user
+*.suo
+*.userprefs
+
+# VS Code
+.vscode/
+
+# Node/Angular
+front/node_modules/
+front/.angular/
+front/dist/
+front/.cache/
+
+# Logs
+*.log
+logs/
+
+# Temp
+**/tmp/
+**/temp/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Env files
+*.env
+front/.env*
+
+# Angular SSR cache
+front/.nuxt/
+
+# Build artifacts
+*.dll
+*.exe
+*.pdb
+*.mdb

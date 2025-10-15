@@ -122,8 +122,9 @@ export class DetalleComponent {
 
   guardar(currentEval: Evaluacion): void {
     this.state.touched$.next(true);
-    const { nombreProyecto, items } = this.state.nombreProyecto$.getValue() && this.state.items$.getValue();
-    if (this.isFormInvalid(this.state.nombreProyecto$.getValue(), this.state.items$.getValue())) return;
+    const nombreProyecto = this.state.nombreProyecto$.getValue();
+    const items = this.state.items$.getValue();
+    if (this.isFormInvalid(nombreProyecto, items)) return;
 
     const commandItems = this.state.items$.getValue()
       .map(it => ({
@@ -134,7 +135,7 @@ export class DetalleComponent {
 
     this.dataService.updateEvaluacion(
       currentEval.id,
-      this.state.nombreProyecto$.getValue().trim(),
+      nombreProyecto.trim(),
       this.state.deltaRiesgoPct$.getValue(),
       commandItems
     ).pipe(

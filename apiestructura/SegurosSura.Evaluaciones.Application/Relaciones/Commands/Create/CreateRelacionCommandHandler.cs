@@ -37,12 +37,8 @@ public class CreateRelacionCommandHandler : IRequestHandler<CreateRelacionComman
             throw new EntityNotFoundException("Complejidad", request.ComplejidadId);
         }
 
-        // Verificar si ya existe una relación para este par
+        // Verificar si ya existe una relación para este par (upsert)
         var existingRelacion = await _relacionRepository.GetByComponenteAndComplejidadAsync(request.ComponenteId, request.ComplejidadId);
-        if (existingRelacion != null)
-        {
-            throw new EntityAlreadyExistsException("Relación", "componente-complejidad", $"{componente.Nombre}-{complejidad.Nombre}");
-        }
 
         // Validar que las horas sean positivas
         if (request.Horas <= 0)
@@ -50,6 +46,15 @@ public class CreateRelacionCommandHandler : IRequestHandler<CreateRelacionComman
             throw new ValidationException("Horas", "debe ser mayor a 0");
         }
 
+        if (existingRelacion != null)
+        {
+            // Si existe, actualizar horas y devolver el mismo Id
+            existingRelacion.Horas = request.Horas;
+            await _relacionRepository.UpdateAsync(existingRelacion);
+            return existingRelacion.Id;
+        }
+
+        // Si no existe, crear nueva relación
         var relacion = new RelacionComponenteComplejidad
         {
             Id = Guid.NewGuid(),

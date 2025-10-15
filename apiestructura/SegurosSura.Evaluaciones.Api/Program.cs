@@ -67,10 +67,13 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Ensure database is created
-using (var scope = app.Services.CreateScope())
+if (app.Environment.IsDevelopment())
 {
-    var context = scope.ServiceProvider.GetRequiredService<EvaluacionesDbContext>();
-    context.Database.EnsureCreated();
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<EvaluacionesDbContext>();
+        context.Database.EnsureCreated();
+    }
 }
 
 app.Run();

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DataService } from '../../../shared/data.service';
+import { Componente } from '../../../shared/models';
 
 @Component({
   selector: 'app-componentes',
@@ -11,8 +12,8 @@ import { DataService } from '../../../shared/data.service';
   styleUrls: ['./componentes.component.scss']
 })
 export class ComponentesComponent implements OnInit {
-  componentes: any[] = [];
-  componentesPaginados: any[] = [];
+  componentes: Componente[] = [];
+  componentesPaginados: Componente[] = [];
   nuevoComponente = '';
   componenteEditando: any = null;
   error = '';
@@ -35,8 +36,17 @@ export class ComponentesComponent implements OnInit {
   }
 
   refresh() {
-    this.componentes = this.dataService.getComponentes();
-    this.calcularPaginacion();
+    this.dataService.getComponentes(true).subscribe({
+      next: (items: Componente[]) => {
+        this.componentes = items;
+        this.paginaActual = 1;
+        this.calcularPaginacion();
+      },
+      error: (err: unknown) => {
+        console.error(err);
+        this.error = 'No se pudieron cargar los componentes';
+      }
+    });
   }
 
   calcularPaginacion() {
@@ -70,26 +80,42 @@ export class ComponentesComponent implements OnInit {
       return;
     }
 
-    try {
-      if (this.editando && this.componenteEditando) {
-        // Actualizar componente existente
-        this.componenteEditando.nombre = this.nuevoComponente.trim();
-        this.dataService.updateComponente(this.componenteEditando.id, this.componenteEditando.nombre);
-        this.success = 'Componente actualizado correctamente';
-      } else {
-        // Agregar nuevo componente
-        this.dataService.addComponente(this.nuevoComponente.trim());
-        this.success = 'Componente agregado correctamente';
-      }
-      
-      this.limpiarFormulario();
-      this.refresh();
-      this.error = '';
-      
-      setTimeout(() => this.success = '', 3000);
-    } catch (error: any) {
-      this.error = error.message || 'Error al procesar componente';
-      this.success = '';
+    if (this.editando && this.componenteEditando) {
+      // Actualizar
+      const nombre = this.nuevoComponente.trim();
+      // Si el UI no soporta seleccionar proyecto aún, mantener el proyecto actual del componente si existe
+      const proyectoId = (this.componenteEditando as any)?.proyectoId;
+      this.dataService.updateComponente(this.componenteEditando.id, nombre, undefined, proyectoId).subscribe({
+        next: () => {
+          this.success = 'Componente actualizado correctamente';
+          this.limpiarFormulario();
+          this.refresh();
+          this.error = '';
+          setTimeout(() => this.success = '', 3000);
+        },
+        error: (err: unknown) => {
+          console.error(err);
+          this.error = this.formatHttpError(err) || 'Error al actualizar componente';
+          this.success = '';
+        }
+      });
+    } else {
+      // Crear
+      const nombre = this.nuevoComponente.trim();
+      this.dataService.addComponente(nombre).subscribe({
+        next: () => {
+          this.success = 'Componente agregado correctamente';
+          this.limpiarFormulario();
+          this.refresh();
+          this.error = '';
+          setTimeout(() => this.success = '', 3000);
+        },
+        error: (err: unknown) => {
+          console.error(err);
+          this.error = this.formatHttpError(err) || 'Error al agregar componente';
+          this.success = '';
+        }
+      });
     }
   }
 
@@ -119,17 +145,19 @@ export class ComponentesComponent implements OnInit {
     const nombreComponente = componente?.nombre || 'este componente';
     
     if (confirm(`¿Estás seguro de que quieres eliminar "${nombreComponente}"?\n\nEsto también eliminará:\n• Todas las relaciones asociadas\n• Las evaluaciones que usen este componente\n\nEsta acción no se puede deshacer.`)) {
-      try {
-        this.dataService.deleteComponente(id);
-        this.refresh();
-        this.success = `Componente "${nombreComponente}" eliminado correctamente`;
-        this.error = '';
-        
-        setTimeout(() => this.success = '', 3000);
-      } catch (error: any) {
-        this.error = error.message || 'Error al eliminar componente';
-        this.success = '';
-      }
+      this.dataService.deleteComponente(id).subscribe({
+        next: () => {
+          this.refresh();
+          this.success = `Componente "${nombreComponente}" eliminado correctamente`;
+          this.error = '';
+          setTimeout(() => this.success = '', 3000);
+        },
+        error: (err: unknown) => {
+          console.error(err);
+          this.error = this.formatHttpError(err) || 'Error al eliminar componente';
+          this.success = '';
+        }
+      });
     }
   }
 
@@ -201,5 +229,19 @@ export class ComponentesComponent implements OnInit {
   limpiarMensajes() {
     this.error = '';
     this.success = '';
+  }
+
+  private formatHttpError(err: any): string {
+    // Angular HttpErrorResponse common shapes
+    if (!err) return '';
+    const anyErr = err as any;
+    if (typeof anyErr.error === 'string') return anyErr.error;
+    if (anyErr.error?.message) return anyErr.error.message;
+    if (anyErr.message) return anyErr.message;
+    try {
+      return JSON.stringify(anyErr.error ?? anyErr);
+    } catch {
+      return '';
+    }
   }
 }
