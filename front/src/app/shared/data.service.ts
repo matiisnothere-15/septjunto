@@ -1,13 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { map, tap, switchMap } from 'rxjs/operators';
 import { Componente, Complejidad, RelacionCC, Evaluacion, Proyecto } from './models';
 
 @Injectable({ providedIn: 'root' })
 export class DataService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:5000/api'; // Cambia esto a la URL de tu API
+  // Usar rutas relativas y dejar que el interceptor prefije apiBaseUrl
+  private apiUrl = '/api';
 
   // Observable-based cache
   private componentesCache$: Observable<Componente[]> | null = null;
@@ -25,14 +26,23 @@ export class DataService {
   }
 
   addComponente(nombre: string, descripcion = ''): Observable<any> {
-    return this.http.post(`${this.apiUrl}/componentes`, { nombre, descripcion }).pipe(
-      tap(() => this.componentesCache$ = null) // Invalidate cache
+    // Necesitamos enviar proyectoId por restricción de la BD. Tomamos el primer proyecto como default.
+    return this.getProyectos().pipe(
+      map((proyectos: Proyecto[]) => proyectos[0]?.id),
+      switchMap((proyectoId: string | undefined) => {
+        const body: any = { nombre, descripcion };
+        if (proyectoId) body.proyectoId = proyectoId;
+        return this.http.post(`${this.apiUrl}/componentes`, body);
+      }),
+      tap(() => this.componentesCache$ = null)
     );
   }
 
-  updateComponente(id: string, nombre: string, descripcion?: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/componentes/${id}`, { id, nombre, descripcion }).pipe(
-      tap(() => this.componentesCache$ = null) // Invalidate cache
+  updateComponente(id: string, nombre: string, descripcion?: string, proyectoId?: string): Observable<any> {
+    const body: any = { id, nombre, descripcion };
+    if (proyectoId) body.proyectoId = proyectoId;
+    return this.http.put(`${this.apiUrl}/componentes/${id}`, body).pipe(
+      tap(() => this.componentesCache$ = null)
     );
   }
 
@@ -46,7 +56,7 @@ export class DataService {
   getComplejidades(forceRefresh = false): Observable<Complejidad[]> {
     if (!this.complejidadesCache$ || forceRefresh) {
       this.complejidadesCache$ = this.http.get<Complejidad[]>(`${this.apiUrl}/complejidades`).pipe(
-        map(complejidades => complejidades.sort((a, b) => a.orden - b.orden)),
+        map((complejidades: Complejidad[]) => complejidades.sort((a: Complejidad, b: Complejidad) => a.orden - b.orden)),
         tap(() => console.log('Complejidades fetched from API'))
       );
     }
@@ -75,11 +85,31 @@ export class DataService {
     return this.relacionesCache$;
   }
 
-  upsertRelacion(componenteId: string, complejidadId: string, horas: number): Observable<any> {
-    // This logic needs to be adapted based on your backend implementation
-    // Assuming a POST/PUT endpoint for relations
-    return this.http.post(`${this.apiUrl}/relaciones`, { componenteId, complejidadId, horas }).pipe(
-      tap(() => this.relacionesCache$ = null) // Invalidate cache
+  /**
+   * Upsert relación componente-complejidad.
+   * Lógica en front: si existe par (componenteId, complejidadId) hace PUT; si no, POST.
+   * Nota: el backend también soporta upsert en POST, pero esta variante evita errores de unicidad.
+   */
+  upsertRelacion(componenteId: string, complejidadId: string, horas: number): Observable<string | void> {
+    return this.getRelaciones(true).pipe(
+      switchMap((relaciones: RelacionCC[]) => {
+        const existente = relaciones.find(r => r.componenteId === componenteId && r.complejidadId === complejidadId);
+        if (existente) {
+          return this.updateRelacion(existente.id, componenteId, complejidadId, horas).pipe(
+            tap(() => this.relacionesCache$ = null)
+          );
+        }
+        return this.http.post<string>(`${this.apiUrl}/relaciones`, { componenteId, complejidadId, horas }).pipe(
+          tap(() => this.relacionesCache$ = null)
+        );
+      })
+    );
+  }
+
+  /** Actualizar relación explícitamente por id (opcional si ya usas upsert en POST) */
+  updateRelacion(id: string, componenteId: string, complejidadId: string, horas: number): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/relaciones/${id}`, { id, componenteId, complejidadId, horas }).pipe(
+      tap(() => this.relacionesCache$ = null)
     );
   }
   
@@ -92,7 +122,7 @@ export class DataService {
   // ---- Evaluaciones ----
   getEvaluaciones(): Observable<Evaluacion[]> {
     return this.http.get<Evaluacion[]>(`${this.apiUrl}/evaluaciones`).pipe(
-        map(evaluaciones => evaluaciones.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()))
+        map((evaluaciones: Evaluacion[]) => evaluaciones.sort((a: Evaluacion, b: Evaluacion) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()))
     );
   }
 
@@ -126,7 +156,7 @@ export class DataService {
   // ---- Proyectos ----
   getProyectos(): Observable<Proyecto[]> {
     return this.http.get<Proyecto[]>(`${this.apiUrl}/proyectos`).pipe(
-        map(proyectos => proyectos.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()))
+        map((proyectos: Proyecto[]) => proyectos.sort((a: Proyecto, b: Proyecto) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()))
     );
   }
 }

@@ -11,12 +11,14 @@ public class CreateComponenteCommandValidator : AbstractValidator<CreateComponen
             .NotEmpty()
             .WithMessage("El nombre del componente es requerido")
             .MaximumLength(100)
-            .WithMessage("El nombre no puede exceder 100 caracteres")
-            .Matches(@"^[a-zA-Z0-9\s\-_]+$")
-            .WithMessage("El nombre solo puede contener letras, números, espacios, guiones y guiones bajos");
+            .WithMessage("El nombre no puede exceder 100 caracteres");
 
         RuleFor(x => x.Descripcion)
             .MaximumLength(500)
             .WithMessage("La descripción no puede exceder 500 caracteres");
+
+        RuleFor(x => x.ProyectoId)
+            .Must(id => id == null || id != Guid.Empty)
+            .WithMessage("ProyectoId, si se envía, debe ser un GUID válido");
     }
 }

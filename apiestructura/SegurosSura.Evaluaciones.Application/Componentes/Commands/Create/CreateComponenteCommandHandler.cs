@@ -8,10 +8,12 @@ namespace SegurosSura.Evaluaciones.Application.Componentes.Commands.Create;
 public class CreateComponenteCommandHandler : IRequestHandler<CreateComponenteCommand, Guid>
 {
     private readonly IComponenteRepository _componenteRepository;
+    private readonly IProyectoRepository _proyectoRepository;
 
-    public CreateComponenteCommandHandler(IComponenteRepository componenteRepository)
+    public CreateComponenteCommandHandler(IComponenteRepository componenteRepository, IProyectoRepository proyectoRepository)
     {
         _componenteRepository = componenteRepository;
+        _proyectoRepository = proyectoRepository;
     }
 
     public async Task<Guid> Handle(CreateComponenteCommand request, CancellationToken cancellationToken)
@@ -23,12 +25,51 @@ public class CreateComponenteCommandHandler : IRequestHandler<CreateComponenteCo
             throw new EntityAlreadyExistsException("Componente", "nombre", request.Nombre);
         }
 
+        // Determinar ProyectoId: usar el enviado o un proyecto existente por defecto
+        Guid proyectoId;
+        if (request.ProyectoId.HasValue)
+        {
+            proyectoId = request.ProyectoId.Value;
+            var proyectoExists = await _proyectoRepository.GetByIdAsync(proyectoId) != null;
+            if (!proyectoExists)
+            {
+                throw new EntityNotFoundException("Proyecto", proyectoId);
+            }
+        }
+        else
+        {
+            // Si no se envía, tomar el primer proyecto disponible
+            var proyectos = await _proyectoRepository.GetAllAsync();
+            var first = proyectos.FirstOrDefault();
+            if (first == null)
+            {
+                // Crear un proyecto por defecto si no existe ninguno
+                var defaultProyecto = new Proyecto
+                {
+                    Id = Guid.NewGuid(),
+                    Nombre = "Proyecto por defecto",
+                    Descripcion = "Generado automáticamente",
+                    Fecha = DateTime.UtcNow,
+                    HorasTotales = 0,
+                    DiasEstimados = 0,
+                    Riesgo = 0
+                };
+                var created = await _proyectoRepository.AddAsync(defaultProyecto);
+                proyectoId = created.Id;
+            }
+            else
+            {
+                proyectoId = first.Id;
+            }
+        }
+
         var componente = new Componente
         {
             Id = Guid.NewGuid(),
             Nombre = request.Nombre,
             Descripcion = request.Descripcion,
-            Activo = true
+            Activo = true,
+            ProyectoId = proyectoId
         };
 
         await _componenteRepository.CreateAsync(componente);

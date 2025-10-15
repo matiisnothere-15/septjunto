@@ -1,4 +1,4 @@
-export interface Componente { id: string; nombre: string; descripcion?: string; activo: boolean; }
+export interface Componente { id: string; nombre: string; descripcion?: string; activo: boolean; proyectoId?: string; }
 export interface Complejidad { id: string; nombre: string; orden: number; activo: boolean; }
 export interface RelacionCC { id: string; componenteId: string; complejidadId: string; horas: number; }
 export interface EvaluacionDetalle { 

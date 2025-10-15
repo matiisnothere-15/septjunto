@@ -29,9 +29,18 @@ export class RelacionesComponent implements OnInit {
   }
 
   refresh() {
-    this.componentes = this.dataService.getComponentes();
-    this.complejidades = this.dataService.getComplejidades().sort((a, b) => a.orden - b.orden);
-    this.relaciones = this.dataService.getRelaciones();
+    this.dataService.getComponentes(true).subscribe({
+      next: (items) => this.componentes = items,
+      error: (err) => console.error(err)
+    });
+    this.dataService.getComplejidades(true).subscribe({
+      next: (items) => this.complejidades = items.sort((a: any, b: any) => a.orden - b.orden),
+      error: (err) => console.error(err)
+    });
+    this.dataService.getRelaciones(true).subscribe({
+      next: (items) => this.relaciones = items,
+      error: (err) => console.error(err)
+    });
   }
 
   guardarRelacion() {
@@ -50,37 +59,40 @@ export class RelacionesComponent implements OnInit {
       return;
     }
 
-    try {
-      this.dataService.upsertRelacion(
-        this.componenteSeleccionado,
-        this.complejidadSeleccionada,
-        this.horas
-      );
-      
-      this.limpiarFormulario();
-      this.refresh();
-      this.success = 'Relación guardada correctamente';
-      this.error = '';
-      
-      setTimeout(() => this.success = '', 3000);
-    } catch (error: any) {
-      this.error = error.message || 'Error al guardar relación';
-      this.success = '';
-    }
+    this.dataService.upsertRelacion(
+      this.componenteSeleccionado!,
+      this.complejidadSeleccionada!,
+      this.horas
+    ).subscribe({
+      next: () => {
+        this.limpiarFormulario();
+        this.refresh();
+        this.success = 'Relación guardada correctamente';
+        this.error = '';
+        setTimeout(() => this.success = '', 3000);
+      },
+      error: (err) => {
+        console.error(err);
+        this.error = 'Error al guardar relación';
+        this.success = '';
+      }
+    });
   }
 
   eliminarRelacion(id: string) {
-    try {
-      this.dataService.deleteRelacion(id);
-      this.refresh();
-      this.success = 'Relación eliminada correctamente';
-      this.error = '';
-      
-      setTimeout(() => this.success = '', 3000);
-    } catch (error: any) {
-      this.error = error.message || 'Error al eliminar relación';
-      this.success = '';
-    }
+    this.dataService.deleteRelacion(id).subscribe({
+      next: () => {
+        this.refresh();
+        this.success = 'Relación eliminada correctamente';
+        this.error = '';
+        setTimeout(() => this.success = '', 3000);
+      },
+      error: (err) => {
+        console.error(err);
+        this.error = 'Error al eliminar relación';
+        this.success = '';
+      }
+    });
   }
 
   limpiarFormulario() {
@@ -95,10 +107,10 @@ export class RelacionesComponent implements OnInit {
   }
 
   nombreComponente(id: string): string {
-    return this.dataService.nombreComponente(id) || 'N/A';
+    return this.componentes.find(c => c.id === id)?.nombre || 'N/A';
   }
 
   nombreComplejidad(id: string): string {
-    return this.dataService.nombreComplejidad(id) || 'N/A';
+    return this.complejidades.find(c => c.id === id)?.nombre || 'N/A';
   }
 }

@@ -1,5 +1,5 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DataService } from '../../shared/data.service';
@@ -16,6 +16,7 @@ import { map, startWith, debounceTime, distinctUntilChanged } from 'rxjs/operato
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InicioComponent {
+  private router = inject(Router);
 
   private searchTerm = new BehaviorSubject<string>('');
 
@@ -34,8 +35,8 @@ export class InicioComponent {
     );
 
     this.proyectos$ = combineLatest([allProyectos$, searchTerm$]).pipe(
-      map(([proyectos, term]) =>
-        proyectos.filter(p => term ? p.nombre.toLowerCase().includes(term.toLowerCase()) : true)
+      map(([proyectos, term]: [Proyecto[], string]) =>
+        proyectos.filter((p: Proyecto) => term ? p.nombre.toLowerCase().includes(term.toLowerCase()) : true)
       )
     );
   }
@@ -44,9 +45,7 @@ export class InicioComponent {
     this.searchTerm.next(term);
   }
 
-  crearNuevo() {
-    location.href = '/evaluaciones/crear';
-  }
+  crearNuevo() { this.router.navigate(['/evaluaciones/crear']); }
 
   formatearFecha(fecha: string): string {
     return new Date(fecha).toLocaleDateString('es-ES', {
