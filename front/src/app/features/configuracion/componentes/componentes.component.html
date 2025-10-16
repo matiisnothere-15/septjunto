@@ -26,6 +26,27 @@
         class="input"
         maxlength="100"
       />
+
+      <!-- Matriz de horas por complejidad (solo en creación, no edición por ahora) -->
+      <div class="complejidad-grid" *ngIf="!editando && complejidades.length">
+        <h3 class="subtitle">Horas estimadas por complejidad</h3>
+        <div class="grid">
+          <div class="grid-row" *ngFor="let c of complejidades">
+            <label class="grid-label">{{ c.nombre }} (orden {{ c.orden }})</label>
+            <input
+              type="number"
+              class="input input--number"
+              [name]="'horas_' + c.id"
+              [(ngModel)]="horasPorComplejidad[c.id]"
+              min="0"
+              step="0.5"
+              placeholder="0"
+              aria-label="Horas para {{ c.nombre }}"
+            />
+          </div>
+        </div>
+        <p class="help">Ingresa 0 si no aplica. 6 horas equivalen a 1 día aproximado.</p>
+      </div>
       <div class="form-actions">
         <button type="submit" class="btn btn--primary" [disabled]="!nuevoComponente.trim()">
           {{ editando ? 'Actualizar' : 'Guardar' }}

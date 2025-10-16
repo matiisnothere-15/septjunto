@@ -19,12 +19,12 @@ public class ProyectoRepository : IProyectoRepository
 
     public async Task<IEnumerable<Proyecto>> GetAllAsync()
     {
-        return await _context.Proyectos.ToListAsync();
+        return await _context.Proyectos.AsNoTracking().ToListAsync();
     }
 
-    public async Task<Proyecto> GetByIdAsync(Guid id)
+    public async Task<Proyecto?> GetByIdAsync(Guid id)
     {
-        return await _context.Proyectos.FindAsync(id);
+        return await _context.Proyectos.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
     }
 
     public async Task<Proyecto> AddAsync(Proyecto proyecto)

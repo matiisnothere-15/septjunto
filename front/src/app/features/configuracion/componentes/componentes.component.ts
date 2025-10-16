@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DataService } from '../../../shared/data.service';
-import { Componente } from '../../../shared/models';
+import { Componente, Complejidad } from '../../../shared/models';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-componentes',
@@ -20,6 +21,8 @@ export class ComponentesComponent implements OnInit {
   success = '';
   mostrarFormulario = false;
   editando = false;
+  complejidades: Complejidad[] = [];
+  horasPorComplejidad: Record<string, number> = {};
   
   // Paginación
   paginaActual = 1;
@@ -33,6 +36,17 @@ export class ComponentesComponent implements OnInit {
 
   ngOnInit() {
     this.refresh();
+    this.dataService.getComplejidades().subscribe({
+      next: (items) => {
+        this.complejidades = items;
+        // Inicializar horas por complejidad con valores por defecto (ej: 0)
+        this.horasPorComplejidad = Object.fromEntries(items.map(c => [c.id, 0]));
+      },
+      error: () => {
+        // no bloqueamos UI de componentes si falla complejidades, pero informamos
+        this.error = 'No se pudieron cargar las complejidades';
+      }
+    });
   }
 
   refresh() {
@@ -100,15 +114,39 @@ export class ComponentesComponent implements OnInit {
         }
       });
     } else {
-      // Crear
+      // Crear componente y luego crear relaciones por complejidad
       const nombre = this.nuevoComponente.trim();
       this.dataService.addComponente(nombre).subscribe({
-        next: () => {
-          this.success = 'Componente agregado correctamente';
-          this.limpiarFormulario();
-          this.refresh();
-          this.error = '';
-          setTimeout(() => this.success = '', 3000);
+        next: (componenteId: string) => {
+          // Si el API retorna el Id directamente, perfecto; si no, lo obtenemos refrescando.
+          const crearRelaciones$ = this.complejidades
+            .map(c => ({ c, horas: Number(this.horasPorComplejidad[c.id] || 0) }))
+            .filter(x => x.horas > 0)
+            .map(x => this.dataService.createRelacion(componenteId, x.c.id, x.horas));
+
+          if (crearRelaciones$.length === 0) {
+            this.success = 'Componente agregado correctamente';
+            this.limpiarFormulario();
+            this.refresh();
+            this.error = '';
+            setTimeout(() => this.success = '', 3000);
+            return;
+          }
+
+          forkJoin(crearRelaciones$).subscribe({
+            next: () => {
+              this.success = 'Componente y relaciones guardados correctamente';
+              this.limpiarFormulario();
+              this.refresh();
+              this.error = '';
+              setTimeout(() => this.success = '', 3000);
+            },
+            error: (err: unknown) => {
+              console.error(err);
+              this.success = '';
+              this.error = this.formatHttpError(err) || 'Error al guardar relaciones de complejidad';
+            }
+          });
         },
         error: (err: unknown) => {
           console.error(err);
@@ -129,6 +167,8 @@ export class ComponentesComponent implements OnInit {
     this.componenteEditando = null;
     this.nuevoComponente = '';
     this.error = '';
+    // reset de horas
+    this.horasPorComplejidad = Object.fromEntries(this.complejidades.map(c => [c.id, 0]));
   }
 
   editarComponente(componente: any) {

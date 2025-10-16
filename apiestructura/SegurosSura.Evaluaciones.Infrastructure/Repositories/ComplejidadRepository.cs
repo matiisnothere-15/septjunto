@@ -17,6 +17,7 @@ public class ComplejidadRepository : IComplejidadRepository
     public async Task<IEnumerable<Complejidad>> GetAllAsync()
     {
         return await _context.Complejidades
+            .AsNoTracking()
             .Where(c => c.Activo)
             .OrderBy(c => c.Orden)
             .ToListAsync();
@@ -25,12 +26,14 @@ public class ComplejidadRepository : IComplejidadRepository
     public async Task<Complejidad?> GetByIdAsync(Guid id)
     {
         return await _context.Complejidades
+            .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 
     public async Task<Complejidad?> GetByNameAsync(string nombre)
     {
         return await _context.Complejidades
+            .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Nombre.ToLower() == nombre.ToLower());
     }
 
@@ -60,16 +63,16 @@ public class ComplejidadRepository : IComplejidadRepository
 
     public async Task<bool> ExistsAsync(Guid id)
     {
-        return await _context.Complejidades.AnyAsync(c => c.Id == id);
+        return await _context.Complejidades.AsNoTracking().AnyAsync(c => c.Id == id);
     }
 
     public async Task<bool> ExistsByNameAsync(string nombre)
     {
-        return await _context.Complejidades.AnyAsync(c => c.Nombre.ToLower() == nombre.ToLower());
+        return await _context.Complejidades.AsNoTracking().AnyAsync(c => c.Nombre.ToLower() == nombre.ToLower());
     }
 
     public async Task<bool> ExistsByOrderAsync(int orden)
     {
-        return await _context.Complejidades.AnyAsync(c => c.Orden == orden);
+        return await _context.Complejidades.AsNoTracking().AnyAsync(c => c.Orden == orden);
     }
 }

@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { map, tap, switchMap } from 'rxjs/operators';
+import { map, tap, switchMap, shareReplay } from 'rxjs/operators';
 import { Componente, Complejidad, RelacionCC, Evaluacion, Proyecto } from './models';
 
 @Injectable({ providedIn: 'root' })
@@ -19,22 +19,23 @@ export class DataService {
   getComponentes(forceRefresh = false): Observable<Componente[]> {
     if (!this.componentesCache$ || forceRefresh) {
       this.componentesCache$ = this.http.get<Componente[]>(`${this.apiUrl}/componentes`).pipe(
+        shareReplay({ bufferSize: 1, refCount: true }),
         tap(() => console.log('Componentes fetched from API'))
       );
     }
     return this.componentesCache$;
   }
 
-  addComponente(nombre: string, descripcion = ''): Observable<any> {
-    // Necesitamos enviar proyectoId por restricción de la BD. Tomamos el primer proyecto como default.
+  // Crear Componente y devolver el id (el backend debe devolver string id en el body)
+  addComponente(nombre: string, descripcion = ''): Observable<string> {
     return this.getProyectos().pipe(
       map((proyectos: Proyecto[]) => proyectos[0]?.id),
       switchMap((proyectoId: string | undefined) => {
         const body: any = { nombre, descripcion };
         if (proyectoId) body.proyectoId = proyectoId;
-        return this.http.post(`${this.apiUrl}/componentes`, body);
+        return this.http.post(`${this.apiUrl}/componentes`, body, { responseType: 'text' }); // id como texto
       }),
-      tap(() => this.componentesCache$ = null)
+      tap(() => (this.componentesCache$ = null))
     );
   }
 
@@ -56,7 +57,8 @@ export class DataService {
   getComplejidades(forceRefresh = false): Observable<Complejidad[]> {
     if (!this.complejidadesCache$ || forceRefresh) {
       this.complejidadesCache$ = this.http.get<Complejidad[]>(`${this.apiUrl}/complejidades`).pipe(
-        map((complejidades: Complejidad[]) => complejidades.sort((a: Complejidad, b: Complejidad) => a.orden - b.orden)),
+        map((c: Complejidad[]) => c.sort((a, b) => a.orden - b.orden)),
+        shareReplay({ bufferSize: 1, refCount: true }),
         tap(() => console.log('Complejidades fetched from API'))
       );
     }
@@ -79,6 +81,7 @@ export class DataService {
   getRelaciones(forceRefresh = false): Observable<RelacionCC[]> {
     if (!this.relacionesCache$ || forceRefresh) {
       this.relacionesCache$ = this.http.get<RelacionCC[]>(`${this.apiUrl}/relaciones`).pipe(
+        shareReplay({ bufferSize: 1, refCount: true }),
         tap(() => console.log('Relaciones fetched from API'))
       );
     }
@@ -103,6 +106,13 @@ export class DataService {
           tap(() => this.relacionesCache$ = null)
         );
       })
+    );
+  }
+
+  // Crear relación simple (POST directo)
+  createRelacion(componenteId: string, complejidadId: string, horas: number): Observable<string> {
+    return this.http.post(`${this.apiUrl}/relaciones`, { componenteId, complejidadId, horas }, { responseType: 'text' }).pipe(
+      tap(() => (this.relacionesCache$ = null))
     );
   }
 

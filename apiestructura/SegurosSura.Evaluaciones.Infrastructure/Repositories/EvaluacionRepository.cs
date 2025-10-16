@@ -17,6 +17,7 @@ public class EvaluacionRepository : IEvaluacionRepository
     public async Task<IEnumerable<Evaluacion>> GetAllAsync()
     {
         return await _context.Evaluaciones
+            .AsNoTracking()
             .Include(e => e.Detalles)
                 .ThenInclude(d => d.Componente)
             .Include(e => e.Detalles)
@@ -28,6 +29,7 @@ public class EvaluacionRepository : IEvaluacionRepository
     public async Task<Evaluacion?> GetByIdAsync(Guid id)
     {
         return await _context.Evaluaciones
+            .AsNoTracking()
             .Include(e => e.Detalles)
                 .ThenInclude(d => d.Componente)
             .Include(e => e.Detalles)
@@ -61,6 +63,6 @@ public class EvaluacionRepository : IEvaluacionRepository
 
     public async Task<bool> ExistsAsync(Guid id)
     {
-        return await _context.Evaluaciones.AnyAsync(e => e.Id == id);
+        return await _context.Evaluaciones.AsNoTracking().AnyAsync(e => e.Id == id);
     }
 }

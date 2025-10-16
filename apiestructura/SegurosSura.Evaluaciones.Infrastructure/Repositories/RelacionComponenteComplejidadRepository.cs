@@ -17,6 +17,7 @@ public class RelacionComponenteComplejidadRepository : IRelacionComponenteComple
     public async Task<IEnumerable<RelacionComponenteComplejidad>> GetAllAsync()
     {
         return await _context.RelacionesComponenteComplejidad
+            .AsNoTracking()
             .Include(r => r.Componente)
             .Include(r => r.Complejidad)
             .ToListAsync();
@@ -25,6 +26,7 @@ public class RelacionComponenteComplejidadRepository : IRelacionComponenteComple
     public async Task<RelacionComponenteComplejidad?> GetByIdAsync(Guid id)
     {
         return await _context.RelacionesComponenteComplejidad
+            .AsNoTracking()
             .Include(r => r.Componente)
             .Include(r => r.Complejidad)
             .FirstOrDefaultAsync(r => r.Id == id);
@@ -33,6 +35,7 @@ public class RelacionComponenteComplejidadRepository : IRelacionComponenteComple
     public async Task<RelacionComponenteComplejidad?> GetByComponenteAndComplejidadAsync(Guid componenteId, Guid complejidadId)
     {
         return await _context.RelacionesComponenteComplejidad
+            .AsNoTracking()
             .Include(r => r.Componente)
             .Include(r => r.Complejidad)
             .FirstOrDefaultAsync(r => r.ComponenteId == componenteId && r.ComplejidadId == complejidadId);
@@ -41,6 +44,7 @@ public class RelacionComponenteComplejidadRepository : IRelacionComponenteComple
     public async Task<IEnumerable<RelacionComponenteComplejidad>> GetByComponenteAsync(Guid componenteId)
     {
         return await _context.RelacionesComponenteComplejidad
+            .AsNoTracking()
             .Include(r => r.Componente)
             .Include(r => r.Complejidad)
             .Where(r => r.ComponenteId == componenteId)
@@ -50,6 +54,7 @@ public class RelacionComponenteComplejidadRepository : IRelacionComponenteComple
     public async Task<IEnumerable<RelacionComponenteComplejidad>> GetByComplejidadAsync(Guid complejidadId)
     {
         return await _context.RelacionesComponenteComplejidad
+            .AsNoTracking()
             .Include(r => r.Componente)
             .Include(r => r.Complejidad)
             .Where(r => r.ComplejidadId == complejidadId)
@@ -82,11 +87,11 @@ public class RelacionComponenteComplejidadRepository : IRelacionComponenteComple
 
     public async Task<bool> ExistsAsync(Guid id)
     {
-        return await _context.RelacionesComponenteComplejidad.AnyAsync(r => r.Id == id);
+        return await _context.RelacionesComponenteComplejidad.AsNoTracking().AnyAsync(r => r.Id == id);
     }
 
     public async Task<bool> ExistsByComponenteAndComplejidadAsync(Guid componenteId, Guid complejidadId)
     {
-        return await _context.RelacionesComponenteComplejidad.AnyAsync(r => r.ComponenteId == componenteId && r.ComplejidadId == complejidadId);
+        return await _context.RelacionesComponenteComplejidad.AsNoTracking().AnyAsync(r => r.ComponenteId == componenteId && r.ComplejidadId == complejidadId);
     }
 }

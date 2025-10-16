@@ -8,7 +8,7 @@ namespace SegurosSura.Evaluaciones.Application.Interfaces;
 public interface IProyectoRepository
 {
     Task<IEnumerable<Proyecto>> GetAllAsync();
-    Task<Proyecto> GetByIdAsync(Guid id);
+    Task<Proyecto?> GetByIdAsync(Guid id);
     Task<Proyecto> AddAsync(Proyecto proyecto);
     Task UpdateAsync(Proyecto proyecto);
     Task DeleteAsync(Guid id);

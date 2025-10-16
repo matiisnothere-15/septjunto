@@ -6,6 +6,7 @@ using SegurosSura.Evaluaciones.Application.Relaciones.Commands.Delete;
 using SegurosSura.Evaluaciones.Application.Relaciones.Queries.GetAll;
 using SegurosSura.Evaluaciones.Application.Relaciones.Queries.GetById;
 using SegurosSura.Evaluaciones.Domain.Entities;
+using SegurosSura.Evaluaciones.Api.Dtos;
 
 namespace SegurosSura.Evaluaciones.Api.Controllers;
 
@@ -21,15 +22,16 @@ public class RelacionesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<RelacionComponenteComplejidad>>> GetAll()
+    public async Task<ActionResult<IEnumerable<RelacionDto>>> GetAll()
     {
         var query = new GetAllRelacionesQuery();
         var relaciones = await _mediator.Send(query);
-        return Ok(relaciones);
+        var dtos = relaciones.Select(r => new RelacionDto(r.Id, r.ComponenteId, r.ComplejidadId, r.Horas));
+        return Ok(dtos);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<RelacionComponenteComplejidad>> GetById(Guid id)
+    public async Task<ActionResult<RelacionDto>> GetById(Guid id)
     {
         var query = new GetRelacionByIdQuery(id);
         var relacion = await _mediator.Send(query);
@@ -38,51 +40,30 @@ public class RelacionesController : ControllerBase
         {
             return NotFound();
         }
-        
-        return Ok(relacion);
+        var dto = new RelacionDto(relacion.Id, relacion.ComponenteId, relacion.ComplejidadId, relacion.Horas);
+        return Ok(dto);
     }
 
     [HttpPost]
     public async Task<ActionResult<Guid>> Create([FromBody] CreateRelacionCommand command)
     {
-        try
-        {
-            var relacionId = await _mediator.Send(command);
-            return CreatedAtAction(nameof(GetById), new { id = relacionId }, relacionId);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        var relacionId = await _mediator.Send(command);
+        return CreatedAtAction(nameof(GetById), new { id = relacionId }, relacionId);
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateRelacionCommand command)
     {
-        try
-        {
-            var updateCommand = command with { Id = id };
-            await _mediator.Send(updateCommand);
-            return NoContent();
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        var updateCommand = command with { Id = id };
+        await _mediator.Send(updateCommand);
+        return NoContent();
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        try
-        {
-            var command = new DeleteRelacionCommand(id);
-            await _mediator.Send(command);
-            return NoContent();
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        var command = new DeleteRelacionCommand(id);
+        await _mediator.Send(command);
+        return NoContent();
     }
 }

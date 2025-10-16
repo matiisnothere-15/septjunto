@@ -6,6 +6,7 @@ using SegurosSura.Evaluaciones.Application.Complejidades.Commands.Delete;
 using SegurosSura.Evaluaciones.Application.Complejidades.Queries.GetAll;
 using SegurosSura.Evaluaciones.Application.Complejidades.Queries.GetById;
 using SegurosSura.Evaluaciones.Domain.Entities;
+using SegurosSura.Evaluaciones.Api.Dtos;
 
 namespace SegurosSura.Evaluaciones.Api.Controllers;
 
@@ -21,15 +22,16 @@ public class ComplejidadesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Complejidad>>> GetAll()
+    public async Task<ActionResult<IEnumerable<ComplejidadDto>>> GetAll()
     {
         var query = new GetAllComplejidadesQuery();
         var complejidades = await _mediator.Send(query);
-        return Ok(complejidades);
+        var dtos = complejidades.Select(c => new ComplejidadDto(c.Id, c.Nombre, c.Orden, c.Activo));
+        return Ok(dtos);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Complejidad>> GetById(Guid id)
+    public async Task<ActionResult<ComplejidadDto>> GetById(Guid id)
     {
         var query = new GetComplejidadByIdQuery(id);
         var complejidad = await _mediator.Send(query);
@@ -38,51 +40,30 @@ public class ComplejidadesController : ControllerBase
         {
             return NotFound();
         }
-        
-        return Ok(complejidad);
+        var dto = new ComplejidadDto(complejidad.Id, complejidad.Nombre, complejidad.Orden, complejidad.Activo);
+        return Ok(dto);
     }
 
     [HttpPost]
     public async Task<ActionResult<Guid>> Create([FromBody] CreateComplejidadCommand command)
     {
-        try
-        {
-            var complejidadId = await _mediator.Send(command);
-            return CreatedAtAction(nameof(GetById), new { id = complejidadId }, complejidadId);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        var complejidadId = await _mediator.Send(command);
+        return CreatedAtAction(nameof(GetById), new { id = complejidadId }, complejidadId);
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateComplejidadCommand command)
     {
-        try
-        {
-            var updateCommand = command with { Id = id };
-            await _mediator.Send(updateCommand);
-            return NoContent();
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        var updateCommand = command with { Id = id };
+        await _mediator.Send(updateCommand);
+        return NoContent();
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        try
-        {
-            var command = new DeleteComplejidadCommand(id);
-            await _mediator.Send(command);
-            return NoContent();
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        var command = new DeleteComplejidadCommand(id);
+        await _mediator.Send(command);
+        return NoContent();
     }
 }

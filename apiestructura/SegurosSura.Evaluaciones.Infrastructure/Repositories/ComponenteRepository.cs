@@ -17,6 +17,7 @@ public class ComponenteRepository : IComponenteRepository
     public async Task<IEnumerable<Componente>> GetAllAsync()
     {
         return await _context.Componentes
+            .AsNoTracking()
             .Where(c => c.Activo)
             .OrderBy(c => c.Nombre)
             .ToListAsync();
@@ -25,12 +26,14 @@ public class ComponenteRepository : IComponenteRepository
     public async Task<Componente?> GetByIdAsync(Guid id)
     {
         return await _context.Componentes
+            .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 
     public async Task<Componente?> GetByNameAsync(string nombre)
     {
         return await _context.Componentes
+            .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Nombre.ToLower() == nombre.ToLower());
     }
 
@@ -60,11 +63,11 @@ public class ComponenteRepository : IComponenteRepository
 
     public async Task<bool> ExistsAsync(Guid id)
     {
-        return await _context.Componentes.AnyAsync(c => c.Id == id);
+        return await _context.Componentes.AsNoTracking().AnyAsync(c => c.Id == id);
     }
 
     public async Task<bool> ExistsByNameAsync(string nombre)
     {
-        return await _context.Componentes.AnyAsync(c => c.Nombre.ToLower() == nombre.ToLower());
+        return await _context.Componentes.AsNoTracking().AnyAsync(c => c.Nombre.ToLower() == nombre.ToLower());
     }
 }

@@ -125,45 +125,19 @@ public class EvaluacionesDbContext : DbContext
                   .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // Seed data para componentes básicos
-        SeedData(modelBuilder);
+    // Seed data básicos (solo catálogos imprescindibles)
+    SeedData(modelBuilder);
     }
 
     private void SeedData(ModelBuilder modelBuilder)
     {
-        // Componentes básicos
-        var componentesBasicos = new[]
-        {
-            new Componente { Id = Guid.NewGuid(), Nombre = "Function", Descripcion = "Azure Function", Activo = true },
-            new Componente { Id = Guid.NewGuid(), Nombre = "Data Factory", Descripcion = "Pipeline ADF", Activo = true },
-            new Componente { Id = Guid.NewGuid(), Nombre = "API REST", Descripcion = "Web API", Activo = true },
-            new Componente { Id = Guid.NewGuid(), Nombre = "Base de Datos", Descripcion = "SQL/NoSQL", Activo = true },
-            new Componente { Id = Guid.NewGuid(), Nombre = "Frontend", Descripcion = "Angular/React", Activo = true },
-            new Componente { Id = Guid.NewGuid(), Nombre = "Logic App", Descripcion = "Azure Logic App", Activo = true },
-            new Componente { Id = Guid.NewGuid(), Nombre = "Power BI", Descripcion = "Reportes BI", Activo = true },
-            new Componente { Id = Guid.NewGuid(), Nombre = "Data Lake", Descripcion = "Azure Data Lake", Activo = true },
-            new Componente { Id = Guid.NewGuid(), Nombre = "Event Hub", Descripcion = "Azure Event Hub", Activo = true },
-            new Componente { Id = Guid.NewGuid(), Nombre = "Service Bus", Descripcion = "Azure Service Bus", Activo = true },
-            new Componente { Id = Guid.NewGuid(), Nombre = "Key Vault", Descripcion = "Azure Key Vault", Activo = true },
-            new Componente { Id = Guid.NewGuid(), Nombre = "App Service", Descripcion = "Azure App Service", Activo = true },
-            new Componente { Id = Guid.NewGuid(), Nombre = "Container", Descripcion = "Docker/Kubernetes", Activo = true },
-            new Componente { Id = Guid.NewGuid(), Nombre = "DevOps", Descripcion = "CI/CD Pipeline", Activo = true },
-            new Componente { Id = Guid.NewGuid(), Nombre = "Testing", Descripcion = "Unit/Integration Tests", Activo = true },
-            new Componente { Id = Guid.NewGuid(), Nombre = "Documentación", Descripcion = "Técnica y Usuario", Activo = true }
-        };
-
-        modelBuilder.Entity<Componente>().HasData(componentesBasicos);
-
-        // Complejidades básicas
-        var complejidadesBasicas = new[]
-        {
-            new Complejidad { Id = Guid.NewGuid(), Nombre = "Muy Baja", Orden = 1, Activo = true },
-            new Complejidad { Id = Guid.NewGuid(), Nombre = "Baja", Orden = 2, Activo = true },
-            new Complejidad { Id = Guid.NewGuid(), Nombre = "Media", Orden = 3, Activo = true },
-            new Complejidad { Id = Guid.NewGuid(), Nombre = "Alta", Orden = 4, Activo = true },
-            new Complejidad { Id = Guid.NewGuid(), Nombre = "Muy Alta", Orden = 5, Activo = true }
-        };
-
-        modelBuilder.Entity<Complejidad>().HasData(complejidadesBasicas);
+        // Complejidades básicas con GUIDs constantes (evitar Guid.NewGuid en HasData)
+        modelBuilder.Entity<Complejidad>().HasData(
+            new Complejidad { Id = new Guid("11111111-1111-1111-1111-111111111111"), Nombre = "Muy Baja", Orden = 1, Activo = true },
+            new Complejidad { Id = new Guid("22222222-2222-2222-2222-222222222222"), Nombre = "Baja", Orden = 2, Activo = true },
+            new Complejidad { Id = new Guid("33333333-3333-3333-3333-333333333333"), Nombre = "Media", Orden = 3, Activo = true },
+            new Complejidad { Id = new Guid("44444444-4444-4444-4444-444444444444"), Nombre = "Alta", Orden = 4, Activo = true },
+            new Complejidad { Id = new Guid("55555555-5555-5555-5555-555555555555"), Nombre = "Muy Alta", Orden = 5, Activo = true }
+        );
     }
 }
