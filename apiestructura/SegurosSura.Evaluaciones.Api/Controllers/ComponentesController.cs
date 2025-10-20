@@ -48,7 +48,7 @@ public class ComponentesController : ControllerBase
     public async Task<ActionResult<Guid>> Create([FromBody] CreateComponenteCommand command)
     {
         var componenteId = await _mediator.Send(command);
-        return CreatedAtAction(nameof(GetById), new { id = componenteId }, componenteId);
+        return CreatedAtAction(nameof(GetById), new { id = componenteId }, new { id = componenteId });
     }
 
     [HttpPut("{id}")]

@@ -26,18 +26,26 @@ export class DataService {
     return this.componentesCache$;
   }
 
-  // Crear Componente y devolver el id (el backend debe devolver string id en el body)
+  // --- INICIO DEL CAMBIO ---
+  // Se modifica para que espere un objeto JSON {id: "..."} del backend
+  // y extraiga el ID, en lugar de esperar 'text'.
   addComponente(nombre: string, descripcion = ''): Observable<string> {
     return this.getProyectos().pipe(
       map((proyectos: Proyecto[]) => proyectos[0]?.id),
       switchMap((proyectoId: string | undefined) => {
         const body: any = { nombre, descripcion };
         if (proyectoId) body.proyectoId = proyectoId;
-        return this.http.post(`${this.apiUrl}/componentes`, body, { responseType: 'text' }); // id como texto
+        
+        // Espera un JSON <any> (o <{id: string}>) y extrae el id
+        return this.http.post<any>(`${this.apiUrl}/componentes`, body).pipe(
+          tap(response => console.log('DEBUG DataService: Respuesta API Componente:', response)),
+          map(response => response?.id ?? response?.Id ?? response)
+        ); 
       }),
       tap(() => (this.componentesCache$ = null))
     );
   }
+  // --- FIN DEL CAMBIO ---
 
   updateComponente(id: string, nombre: string, descripcion?: string, proyectoId?: string): Observable<any> {
     const body: any = { id, nombre, descripcion };
@@ -108,14 +116,16 @@ export class DataService {
       })
     );
   }
-
-  // Crear relación simple (POST directo)
+// Crear relación simple (POST directo)
   createRelacion(componenteId: string, complejidadId: string, horas: number): Observable<string> {
-    return this.http.post(`${this.apiUrl}/relaciones`, { componenteId, complejidadId, horas }, { responseType: 'text' }).pipe(
+    // 1. Quitar { responseType: 'text' }
+    // 2. Esperar <any> (o <{id: string}>) porque el backend devuelve JSON
+    // 3. Usar map para extraer el 'id' del objeto de respuesta JSON
+    return this.http.post<any>(`${this.apiUrl}/relaciones`, { componenteId, complejidadId, horas }).pipe(
+      map(response => response.id), // <-- Añadir map para extraer el ID
       tap(() => (this.relacionesCache$ = null))
     );
   }
-
   /** Actualizar relación explícitamente por id (opcional si ya usas upsert en POST) */
   updateRelacion(id: string, componenteId: string, complejidadId: string, horas: number): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/relaciones/${id}`, { id, componenteId, complejidadId, horas }).pipe(

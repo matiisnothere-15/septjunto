@@ -56,7 +56,7 @@ public class ComponenteRepository : IComponenteRepository
         var componente = await _context.Componentes.FindAsync(id);
         if (componente != null)
         {
-            componente.Activo = false; // Soft delete
+            _context.Componentes.Remove(componente); // Hard delete
             await _context.SaveChangesAsync();
         }
     }

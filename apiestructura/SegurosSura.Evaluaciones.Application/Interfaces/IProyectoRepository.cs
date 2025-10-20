@@ -12,4 +12,5 @@ public interface IProyectoRepository
     Task<Proyecto> AddAsync(Proyecto proyecto);
     Task UpdateAsync(Proyecto proyecto);
     Task DeleteAsync(Guid id);
+    Task<Proyecto?> GetByNameAsync(string nombre);
 }

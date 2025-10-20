@@ -91,7 +91,12 @@ if (app.Environment.IsDevelopment())
 // Exception handling middleware
 app.UseMiddleware<SegurosSura.Evaluaciones.Api.Middleware.ExceptionHandlingMiddleware>();
 
-app.UseHttpsRedirection();
+// En desarrollo evitamos forzar HTTPS para simplificar el consumo desde el front (SSR) y evitar
+// problemas de certificados. En producción mantenemos la redirección a HTTPS.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 // Selecciona política según ambiente
 app.UseCors(app.Environment.IsDevelopment() ? "AllowAll" : "FrontendOrigins");
 app.UseAuthorization();

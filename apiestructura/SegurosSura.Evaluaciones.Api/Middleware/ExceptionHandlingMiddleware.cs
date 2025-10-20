@@ -1,4 +1,6 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using System.Net;
 using System.Text.Json;
 
@@ -8,11 +10,13 @@ public class ExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
+    private readonly IWebHostEnvironment _env;
 
-    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger, IWebHostEnvironment env)
     {
         _next = next;
         _logger = logger;
+        _env = env;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -28,7 +32,7 @@ public class ExceptionHandlingMiddleware
         }
     }
 
-    private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         context.Response.ContentType = "application/json";
 
@@ -87,14 +91,29 @@ public class ExceptionHandlingMiddleware
 
             default:
                 statusCode = (int)HttpStatusCode.InternalServerError;
-                response = new
+                if (!_env.IsProduction())
                 {
-                    error = new
+                    response = new
                     {
-                        message = "An error occurred while processing your request",
-                        details = "Internal server error"
-                    }
-                };
+                        error = new
+                        {
+                            message = exception.Message,
+                            inner = exception.InnerException?.Message,
+                            details = exception.StackTrace
+                        }
+                    };
+                }
+                else
+                {
+                    response = new
+                    {
+                        error = new
+                        {
+                            message = "An error occurred while processing your request",
+                            details = "Internal server error"
+                        }
+                    };
+                }
                 break;
         }
 

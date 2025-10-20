@@ -48,7 +48,7 @@ public class RelacionesController : ControllerBase
     public async Task<ActionResult<Guid>> Create([FromBody] CreateRelacionCommand command)
     {
         var relacionId = await _mediator.Send(command);
-        return CreatedAtAction(nameof(GetById), new { id = relacionId }, relacionId);
+        return CreatedAtAction(nameof(GetById), new { id = relacionId }, new { id = relacionId });
     }
 
     [HttpPut("{id}")]

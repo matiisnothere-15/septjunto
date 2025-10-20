@@ -99,6 +99,13 @@ public class EvaluacionesDbContext : DbContext
             // La BD existente no tiene HorasTotales; Ignorar para evitar errores en consultas.
             entity.Ignore(e => e.HorasTotales);
             entity.Property(e => e.HorasTotalesConRiesgo).HasColumnType("decimal(18,2)");
+
+            // FK a Proyecto (existe en BD como NOT NULL)
+            entity.Property(e => e.ProyectoId).IsRequired();
+            entity.HasOne(e => e.Proyecto)
+                  .WithMany(p => p.Evaluaciones)
+                  .HasForeignKey(e => e.ProyectoId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
         // Configuración de EvaluacionDetalle

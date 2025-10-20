@@ -7,14 +7,9 @@ namespace SegurosSura.Evaluaciones.Application.Componentes.Commands.Delete;
 public class DeleteComponenteCommandHandler : IRequestHandler<DeleteComponenteCommand>
 {
     private readonly IComponenteRepository _componenteRepository;
-    private readonly IRelacionComponenteComplejidadRepository _relacionRepository;
-
-    public DeleteComponenteCommandHandler(
-        IComponenteRepository componenteRepository,
-        IRelacionComponenteComplejidadRepository relacionRepository)
+    public DeleteComponenteCommandHandler(IComponenteRepository componenteRepository)
     {
         _componenteRepository = componenteRepository;
-        _relacionRepository = relacionRepository;
     }
 
     public async Task Handle(DeleteComponenteCommand request, CancellationToken cancellationToken)
@@ -25,13 +20,8 @@ public class DeleteComponenteCommandHandler : IRequestHandler<DeleteComponenteCo
             throw new EntityNotFoundException("Componente", request.Id);
         }
 
-        // Verificar si el componente tiene relaciones
-        var relaciones = await _relacionRepository.GetByComponenteAsync(request.Id);
-        if (relaciones.Any())
-        {
-            throw new ValidationException("No se puede eliminar el componente porque tiene relaciones asociadas");
-        }
-
+        // Eliminar físicamente. Las relaciones dependientes se eliminan por cascade
+        // de acuerdo con la configuración del DbContext.
         await _componenteRepository.DeleteAsync(request.Id);
     }
 }

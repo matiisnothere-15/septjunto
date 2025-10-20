@@ -118,6 +118,9 @@ export class ComponentesComponent implements OnInit {
       const nombre = this.nuevoComponente.trim();
       this.dataService.addComponente(nombre).subscribe({
         next: (componenteId: string) => {
+          // --- DEBUG ---
+          console.log('DEBUG: Componente ID recibido por el componente:', componenteId);
+          // --- FIN DEBUG ---
           // Si el API retorna el Id directamente, perfecto; si no, lo obtenemos refrescando.
           const crearRelaciones$ = this.complejidades
             .map(c => ({ c, horas: Number(this.horasPorComplejidad[c.id] || 0) }))
