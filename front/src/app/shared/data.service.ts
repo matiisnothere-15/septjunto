@@ -179,4 +179,9 @@ export class DataService {
         map((proyectos: Proyecto[]) => proyectos.sort((a: Proyecto, b: Proyecto) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()))
     );
   }
+
+  // Crear Proyecto (nuevo)
+  createProyecto(nombre: string, descripcion: string = ''): Observable<Proyecto> {
+    return this.http.post<Proyecto>(`${this.apiUrl}/proyectos`, { nombre, descripcion });
+  }
 }

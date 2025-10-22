@@ -2,6 +2,8 @@ using MediatR;
 using SegurosSura.Evaluaciones.Application.Interfaces;
 using SegurosSura.Evaluaciones.Domain.Exceptions;
 using SegurosSura.Evaluaciones.Domain.Entities;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SegurosSura.Evaluaciones.Application.Evaluaciones.Commands.Create;
 
@@ -29,88 +31,95 @@ public class CreateEvaluacionCommandHandler : IRequestHandler<CreateEvaluacionCo
 
     public async Task<Guid> Handle(CreateEvaluacionCommand request, CancellationToken cancellationToken)
     {
-        // Intentar determinar ProyectoId a partir del nombre enviado (si existe)
-        var proyecto = await _proyectoRepository.GetByNameAsync(request.NombreProyecto);
+        // ----------------------------------------------------------------------
+        // 1. SOLUCIÓN: Validar que el Proyecto EXISTA
+        // ----------------------------------------------------------------------
+        // Usamos el método GetByNameAsync que creamos y mejoramos.
+        // Esto soluciona el error "Cannot insert the value NULL..."
+        var proyecto = await _proyectoRepository.GetByNameAsync(request.NombreProyecto, cancellationToken);
 
-        // También determinaremos ProyectoId desde los componentes de los detalles (fuente más confiable)
-        Guid? proyectoIdDesdeDetalles = null;
-
-        // Validar que todos los componentes y complejidades existen (esto ya estaba bien)
-        foreach (var detalle in request.Detalles)
+        if (proyecto == null)
         {
-            var componente = await _componenteRepository.GetByIdAsync(detalle.ComponenteId);
-            if (componente == null) throw new EntityNotFoundException("Componente", detalle.ComponenteId);
-
-            // Capturar ProyectoId del primer componente y validar consistencia
-            if (!proyectoIdDesdeDetalles.HasValue)
-            {
-                proyectoIdDesdeDetalles = componente.ProyectoId;
-            }
-            else if (proyectoIdDesdeDetalles.Value != componente.ProyectoId)
-            {
-                throw new ValidationException("Todos los componentes de la evaluación deben pertenecer al mismo proyecto.");
-            }
-
-            var complejidad = await _complejidadRepository.GetByIdAsync(detalle.ComplejidadId);
-            if (complejidad == null) throw new EntityNotFoundException("Complejidad", detalle.ComplejidadId);
+            // Fallamos rápido y con un mensaje claro. No más fallbacks.
+            // Esto le dirá al frontend (con un error 400) que el proyecto no existe.
+            throw new ValidationException($"El proyecto con nombre '{request.NombreProyecto}' no fue encontrado en la base de datos.");
         }
+        
+        // Ahora tenemos un proyectoIdFinal garantizado.
+        var proyectoIdFinal = proyecto.Id;
 
-        // Crear la evaluación
-        // Resolver ProyectoId final: priorizar el del componente (consistencia de datos)
-        var proyectoIdFinal = proyectoIdDesdeDetalles ?? proyecto?.Id;
-        if (!proyectoIdFinal.HasValue)
-        {
-            // Fallback: si no hay nombre válido y no hay componentes válidos
-            var todos = await _proyectoRepository.GetAllAsync();
-            var primero = todos.FirstOrDefault();
-            if (primero == null)
-            {
-                throw new ValidationException("No hay proyectos disponibles en la base de datos. Cree uno antes de registrar una evaluación.");
-            }
-            proyectoIdFinal = primero.Id;
-        }
-
+        // ----------------------------------------------------------------------
+        // 2. Crear la entidad Evaluación
+        // ----------------------------------------------------------------------
         var evaluacion = new Evaluacion
         {
             Id = Guid.NewGuid(),
-            Fecha = DateTime.UtcNow, // O la fecha apropiada
+            Fecha = DateTime.UtcNow,
             NombreProyecto = request.NombreProyecto,
             DeltaRiesgoPct = request.DeltaRiesgoPct,
-            ProyectoId = proyectoIdFinal.Value
+            
+            // !! ESTA ES LA LÍNEA QUE ARREGLA EL ERROR !!
+            // Asignamos el ID válido que encontramos.
+            ProyectoId = proyectoIdFinal 
         };
 
-        // Crear los detalles y calcular horas (esto ya estaba bien)
+        // ----------------------------------------------------------------------
+        // 3. Validar y procesar detalles
+        // ----------------------------------------------------------------------
         decimal horasTotales = 0;
         foreach (var detalleDto in request.Detalles)
         {
+            // Validar que el componente existe
+            var componente = await _componenteRepository.GetByIdAsync(detalleDto.ComponenteId, cancellationToken);
+            if (componente == null) 
+                throw new EntityNotFoundException("Componente", detalleDto.ComponenteId);
+
+            // VALIDACIÓN ADICIONAL (RECOMENDADA):
+            // Asegurarse que el componente pertenece al proyecto seleccionado.
+            if (componente.ProyectoId != proyectoIdFinal)
+            {
+                throw new ValidationException($"El componente '{componente.Nombre}' no pertenece al proyecto '{proyecto.Nombre}'.");
+            }
+
+            // Validar que la complejidad existe
+            var complejidad = await _complejidadRepository.GetByIdAsync(detalleDto.ComplejidadId, cancellationToken);
+            if (complejidad == null) 
+                throw new EntityNotFoundException("Complejidad", detalleDto.ComplejidadId);
+
+            // Obtener las horas de la relación
             var relacion = await _relacionRepository.GetByComponenteAndComplejidadAsync(
-                detalleDto.ComponenteId, detalleDto.ComplejidadId);
+                detalleDto.ComponenteId, detalleDto.ComplejidadId, cancellationToken);
 
             if (relacion == null)
             {
-                throw new ValidationException($"No existe relación definida entre componente {detalleDto.ComponenteId} y complejidad {detalleDto.ComplejidadId}. Configurela primero.");
+                // Damos un mensaje de error más claro, usando los nombres.
+                throw new ValidationException($"No existe relación definida entre el componente '{componente.Nombre}' y la complejidad '{complejidad.Nombre}'.");
             }
 
             var detalle = new EvaluacionDetalle
             {
                 Id = Guid.NewGuid(),
-                EvaluacionId = evaluacion.Id, // EF Core debería manejar esto
+                EvaluacionId = evaluacion.Id, 
                 ComponenteId = detalleDto.ComponenteId,
                 ComplejidadId = detalleDto.ComplejidadId,
                 HorasBase = relacion.Horas,
                 DescripcionTarea = detalleDto.DescripcionTarea
             };
-
-            // ¡IMPORTANTE! Asegúrate que la colección Detalles en tu entidad Evaluacion esté inicializada
+            
+            // Asegúrate que la colección Detalles en tu entidad Evaluacion esté inicializada
             // (ej. public List<EvaluacionDetalle> Detalles { get; set; } = new List<EvaluacionDetalle>();)
-            // Si no está inicializada, la siguiente línea dará NullReferenceException
             evaluacion.Detalles.Add(detalle);
             horasTotales += relacion.Horas;
         }
 
-    evaluacion.HorasTotales = horasTotales; // Asignar horas totales base (propiedad ignorada por el mapeo si no existe en BD)
+        // ----------------------------------------------------------------------
+        // 4. Calcular totales
+        // ----------------------------------------------------------------------
+        
+        // Asignar horas totales base
+        evaluacion.HorasTotales = horasTotales; 
 
-        // Calcular horas con riesgo (esto ya estaba bien)
+        // Calcular horas con riesgo
         if (request.DeltaRiesgoPct.HasValue && request.DeltaRiesgoPct != 0)
         {
             evaluacion.HorasTotalesConRiesgo = Math.Round(horasTotales * (1 + request.DeltaRiesgoPct.Value / 100m), 2);
@@ -120,8 +129,10 @@ public class CreateEvaluacionCommandHandler : IRequestHandler<CreateEvaluacionCo
             evaluacion.HorasTotalesConRiesgo = horasTotales;
         }
 
-        // Guardar la evaluación (línea 89 aprox.)
-        await _evaluacionRepository.CreateAsync(evaluacion);
+        // ----------------------------------------------------------------------
+        // 5. Guardar y retornar
+        // ----------------------------------------------------------------------
+        await _evaluacionRepository.CreateAsync(evaluacion, cancellationToken);
 
         return evaluacion.Id;
     }

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SegurosSura.Evaluaciones.Application.Interfaces;
 using SegurosSura.Evaluaciones.Domain.Entities;
 using SegurosSura.Evaluaciones.Infrastructure.Data;
+using System.Threading; // <-- Añadido
 
 namespace SegurosSura.Evaluaciones.Infrastructure.Repositories;
 
@@ -14,7 +15,7 @@ public class EvaluacionRepository : IEvaluacionRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Evaluacion>> GetAllAsync()
+    public async Task<IEnumerable<Evaluacion>> GetAllAsync(CancellationToken cancellationToken = default) // <-- Actualizado
     {
         return await _context.Evaluaciones
             .AsNoTracking()
@@ -23,10 +24,10 @@ public class EvaluacionRepository : IEvaluacionRepository
             .Include(e => e.Detalles)
                 .ThenInclude(d => d.Complejidad)
             .OrderByDescending(e => e.Fecha)
-            .ToListAsync();
+            .ToListAsync(cancellationToken); // <-- Actualizado
     }
 
-    public async Task<Evaluacion?> GetByIdAsync(Guid id)
+    public async Task<Evaluacion?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) // <-- Actualizado
     {
         return await _context.Evaluaciones
             .AsNoTracking()
@@ -34,35 +35,35 @@ public class EvaluacionRepository : IEvaluacionRepository
                 .ThenInclude(d => d.Componente)
             .Include(e => e.Detalles)
                 .ThenInclude(d => d.Complejidad)
-            .FirstOrDefaultAsync(e => e.Id == id);
+            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken); // <-- Actualizado
     }
 
-    public async Task<Evaluacion> CreateAsync(Evaluacion evaluacion)
+    public async Task<Evaluacion> CreateAsync(Evaluacion evaluacion, CancellationToken cancellationToken = default) // <-- Actualizado
     {
         _context.Evaluaciones.Add(evaluacion);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken); // <-- Actualizado
         return evaluacion;
     }
 
-    public async Task<Evaluacion> UpdateAsync(Evaluacion evaluacion)
+    public async Task<Evaluacion> UpdateAsync(Evaluacion evaluacion, CancellationToken cancellationToken = default) // <-- Actualizado
     {
         _context.Evaluaciones.Update(evaluacion);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken); // <-- Actualizado
         return evaluacion;
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default) // <-- Actualizado
     {
-        var evaluacion = await _context.Evaluaciones.FindAsync(id);
+        var evaluacion = await _context.Evaluaciones.FindAsync(new object[] { id }, cancellationToken); // <-- Actualizado
         if (evaluacion != null)
         {
             _context.Evaluaciones.Remove(evaluacion);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken); // <-- Actualizado
         }
     }
 
-    public async Task<bool> ExistsAsync(Guid id)
+    public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default) // <-- Actualizado
     {
-        return await _context.Evaluaciones.AsNoTracking().AnyAsync(e => e.Id == id);
+        return await _context.Evaluaciones.AsNoTracking().AnyAsync(e => e.Id == id, cancellationToken); // <-- Actualizado
     }
 }

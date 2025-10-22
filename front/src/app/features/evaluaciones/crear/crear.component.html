@@ -20,7 +20,6 @@
 
     <div class="form-container">
       <form #f="ngForm" novalidate>
-        <!-- Información General -->
         <div class="form-section">
           <h3 class="section-title">
             <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
@@ -28,18 +27,25 @@
           </h3>
 
           <div class="form-row">
-            <div class="form-group">
-              <label for="nombreProyecto" class="lbl">Nombre de la Evaluación</label>
-              <input
-                id="nombreProyecto"
-                [ngModel]="vm.nombreProyecto"
-                (ngModelChange)="onNombreProyectoChange($event)"
-                name="nombreProyecto"
-                placeholder="Ej.: Evaluación Proyecto X"
-                required
-                class="form-input"
-              />
-              <small class="err" *ngIf="vm.touched && !vm.nombreProyecto.trim()">Requerido</small>
+            <div class="form-group project-selection">
+              <label for="proyectoSelect" class="lbl">Proyecto</label>
+              <div class="input-group">
+                <select
+                  id="proyectoSelect"
+                  [ngModel]="vm.selectedProyectoNombre"
+                  (ngModelChange)="onProyectoSeleccionado($event)"
+                  name="proyectoSelect"
+                  required
+                  class="form-select"
+                >
+                  <option [ngValue]="null" disabled>Selecciona un proyecto existente...</option>
+                  <option *ngFor="let p of vm.proyectos" [ngValue]="p.nombre">{{ p.nombre }}</option>
+                </select>
+                <button type="button" class="btn icon-only" (click)="abrirModalCrearProyecto()" title="Crear Nuevo Proyecto">
+                  <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                </button>
+              </div>
+              <small class="err" *ngIf="vm.touched && !vm.selectedProyectoNombre">Requerido</small>
             </div>
 
             <div class="form-group">
@@ -48,7 +54,7 @@
                 id="deltaRiesgoPct"
                 type="number"
                 [ngModel]="vm.deltaRiesgoPct"
-                (ngModelChange)="onDeltaRiesgoChange($event.toString())"
+                (ngModelChange)="onDeltaRiesgoChange($event ? $event.toString() : '')"
                 name="deltaRiesgoPct"
                 placeholder="Ej.: 15"
                 min="0" max="100" step="1"
@@ -59,7 +65,6 @@
           </div>
         </div>
 
-        <!-- Tareas -->
         <div class="form-section">
           <h3 class="section-title">
             <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 3H5c-1.1 0-2 .9-2 2v14l4-4h12c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
@@ -118,7 +123,6 @@
           </div>
         </div>
 
-        <!-- Resumen -->
         <div class="form-section summary" *ngIf="vm.items.length">
           <h3 class="section-title">
             <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 3H5c-1.1 0-2 .9-2 2v14l4-4h12c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
@@ -142,5 +146,30 @@
         </div>
       </form>
     </div>
+
+    <div class="modal-backdrop" *ngIf="vm.showCrearProyectoModal">
+      <div class="modal">
+        <h3 class="modal-title">Crear Nuevo Proyecto</h3>
+        <div class="modal-content">
+          <div class="form-group">
+            <label for="nuevoNombreProyecto" class="lbl">Nombre del Proyecto</label>
+            <input
+              id="nuevoNombreProyecto"
+              [(ngModel)]="nuevoNombreProyecto"
+              name="nuevoNombreProyecto"
+              placeholder="Introduce el nombre del nuevo proyecto"
+              required
+              minlength="3"
+              class="form-input"
+            />
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn secondary" (click)="cerrarModalCrearProyecto()">Cancelar</button>
+          <button type="button" class="btn primary" (click)="guardarNuevoProyecto()" [disabled]="!nuevoNombreProyecto.trim() || nuevoNombreProyecto.trim().length < 3">Crear Proyecto</button>
+        </div>
+      </div>
+    </div>
+
   </section>
 </ng-container>
