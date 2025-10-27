@@ -159,6 +159,24 @@ export class DataService {
     return this.http.post<string>(`${this.apiUrl}/evaluaciones`, command);
   }
 
+  // Nuevo flujo: crear evaluación y (si no existe) crear/reusar proyecto en un solo POST
+  crearEvaluacionConProyecto(payload: {
+    proyecto: {
+      nombre: string;
+      descripcion?: string;
+      diasEstimados?: number | null;
+      fecha?: string | null;
+      horasTotales?: number | null;
+      riesgo?: number | null;
+    };
+    evaluacion: {
+      deltaRiesgoPct?: number | null;
+      detalle: { componenteId: string; complejidadId: string; descripcionTarea: string; }[];
+    };
+  }): Observable<string> {
+    return this.http.post<string>(`${this.apiUrl}/evaluaciones/crear-con-proyecto`, payload);
+  }
+
   updateEvaluacion(
     id: string,
     nombreProyecto: string,
@@ -181,7 +199,21 @@ export class DataService {
   }
 
   // Crear Proyecto (nuevo)
-  createProyecto(nombre: string, descripcion: string = ''): Observable<Proyecto> {
-    return this.http.post<Proyecto>(`${this.apiUrl}/proyectos`, { nombre, descripcion });
+  createProyecto(payload: {
+    nombre: string;
+    descripcion?: string;
+    diasEstimados?: number | null;
+    fecha?: string | null;        // ISO yyyy-MM-dd o completa
+    horasTotales?: number | null;
+    riesgo?: number | null;       // porcentaje 0..100 (o más, según caso)
+  }): Observable<Proyecto> {
+    // Normalizar: si vienen null/undefined, no enviarlos
+    const body: any = { nombre: payload.nombre };
+    if (payload.descripcion) body.descripcion = payload.descripcion;
+    if (payload.diasEstimados !== undefined && payload.diasEstimados !== null) body.diasEstimados = payload.diasEstimados;
+    if (payload.fecha) body.fecha = payload.fecha; // el backend acepta DateTime?
+    if (payload.horasTotales !== undefined && payload.horasTotales !== null) body.horasTotales = payload.horasTotales;
+    if (payload.riesgo !== undefined && payload.riesgo !== null) body.riesgo = payload.riesgo;
+    return this.http.post<Proyecto>(`${this.apiUrl}/proyectos`, body);
   }
 }

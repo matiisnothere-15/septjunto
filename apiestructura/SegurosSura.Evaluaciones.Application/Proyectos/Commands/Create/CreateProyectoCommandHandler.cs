@@ -16,23 +16,29 @@ public class CreateProyectoCommandHandler : IRequestHandler<CreateProyectoComman
 
     public async Task<Proyecto> Handle(CreateProyectoCommand request, CancellationToken cancellationToken)
     {
-        var existing = await _proyectoRepository.GetByNameAsync(request.Nombre);
+        // Normaliza y valida nombre
+        var nombreTrimmed = request.Nombre.Trim();
+        var existing = await _proyectoRepository.GetByNameAsync(nombreTrimmed, cancellationToken);
         if (existing != null)
         {
-            throw new EntityAlreadyExistsException("Proyecto", "Nombre", request.Nombre);
+            // Para Create, lanzamos validación si ya existe
+            throw new ValidationException($"Ya existe un proyecto con el nombre '{nombreTrimmed}'.");
         }
 
+        // Solo establecemos los campos que son intrínsecos al comando
         var proyecto = new Proyecto
         {
             Id = Guid.NewGuid(),
-            Nombre = request.Nombre.Trim(),
-            Descripcion = request.Descripcion?.Trim() ?? string.Empty,
-            Fecha = DateTime.UtcNow.Date,
-            HorasTotales = 0m,
-            DiasEstimados = 0,
-            Riesgo = 0m
+            Nombre = nombreTrimmed,
+            Descripcion = request.Descripcion?.Trim() ?? string.Empty
         };
 
-        return await _proyectoRepository.AddAsync(proyecto);
+        // Si llegan valores opcionales, los respetamos; si no, dejamos que la BD aplique defaults
+        if (request.DiasEstimados.HasValue) proyecto.DiasEstimados = request.DiasEstimados.Value;
+        if (request.HorasTotales.HasValue) proyecto.HorasTotales = request.HorasTotales.Value;
+        if (request.Riesgo.HasValue) proyecto.Riesgo = request.Riesgo.Value;
+        if (request.Fecha.HasValue) proyecto.Fecha = request.Fecha.Value.Date;
+
+        return await _proyectoRepository.AddAsync(proyecto, cancellationToken);
     }
 }

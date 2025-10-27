@@ -163,6 +163,33 @@
               class="form-input"
             />
           </div>
+
+          <div class="form-group">
+            <label for="nuevaDescripcionProyecto" class="lbl">Descripción</label>
+            <textarea id="nuevaDescripcionProyecto" [(ngModel)]="nuevaDescripcionProyecto" name="nuevaDescripcionProyecto" class="form-input" rows="3" placeholder="Descripción opcional"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nuevosDiasEstimados" class="lbl">Días Estimados</label>
+              <input id="nuevosDiasEstimados" type="number" min="0" [(ngModel)]="nuevosDiasEstimados" name="nuevosDiasEstimados" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label for="nuevaFecha" class="lbl">Fecha</label>
+              <input id="nuevaFecha" type="date" [(ngModel)]="nuevaFecha" name="nuevaFecha" class="form-input" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nuevasHorasTotales" class="lbl">Horas Totales</label>
+              <input id="nuevasHorasTotales" type="number" min="0" step="0.5" [(ngModel)]="nuevasHorasTotales" name="nuevasHorasTotales" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label for="nuevoRiesgo" class="lbl">Riesgo (%)</label>
+              <input id="nuevoRiesgo" type="number" min="0" max="100" step="1" [(ngModel)]="nuevoRiesgo" name="nuevoRiesgo" class="form-input" />
+            </div>
+          </div>
         </div>
         <div class="modal-actions">
           <button type="button" class="btn secondary" (click)="cerrarModalCrearProyecto()">Cancelar</button>

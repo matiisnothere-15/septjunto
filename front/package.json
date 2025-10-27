@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:spa": "ng build -c spa",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:sept-web": "node dist/sept-web/server/server.mjs"

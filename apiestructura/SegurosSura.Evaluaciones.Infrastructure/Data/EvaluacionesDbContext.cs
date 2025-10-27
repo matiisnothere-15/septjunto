@@ -28,12 +28,27 @@ public class EvaluacionesDbContext : DbContext
         {
             entity.ToTable("TBL_Proyecto");
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Nombre).IsRequired().HasMaxLength(200);
-            entity.Property(e => e.Descripcion).HasMaxLength(1000);
-            entity.Property(e => e.Fecha).IsRequired();
-            entity.Property(e => e.HorasTotales).IsRequired().HasColumnType("decimal(18,2)");
-            entity.Property(e => e.DiasEstimados).IsRequired();
-            entity.Property(e => e.Riesgo).IsRequired().HasColumnType("decimal(18,2)");
+            entity.Property(e => e.Nombre).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.Descripcion).HasColumnType("nvarchar(max)");
+        // Permitir que la BD establezca valores predeterminados donde corresponda
+        entity.Property(e => e.Fecha)
+            .IsRequired()
+            .ValueGeneratedOnAdd()
+            .HasDefaultValueSql("GETDATE()");
+        entity.Property(e => e.HorasTotales)
+            .IsRequired()
+            .HasColumnType("decimal(18,2)")
+            .HasDefaultValue(0m)
+            .ValueGeneratedOnAdd();
+        entity.Property(e => e.DiasEstimados)
+            .IsRequired()
+            .HasDefaultValue(0)
+            .ValueGeneratedOnAdd();
+        entity.Property(e => e.Riesgo)
+            .IsRequired()
+            .HasColumnType("decimal(5,2)")
+            .HasDefaultValue(0m)
+            .ValueGeneratedOnAdd();
         });
 
         // Configuración de Componente

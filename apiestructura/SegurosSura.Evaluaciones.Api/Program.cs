@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 using SegurosSura.Evaluaciones.Infrastructure.Data;
 using SegurosSura.Evaluaciones.Application.Interfaces;
 using SegurosSura.Evaluaciones.Infrastructure.Repositories;
@@ -7,11 +8,21 @@ using System.Reflection;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using SegurosSura.Evaluaciones.Domain.Entities;
+using Microsoft.OpenApi.Models;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Routing;
+using System.Linq;
+using SegurosSura.Evaluaciones.Api.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(opt =>
+    {
+        // Evitar ciclos de referencia en serialización (navegaciones EF)
+        opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
 
 // FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
@@ -19,7 +30,18 @@ builder.Services.AddFluentValidationClientsideAdapters();
 // Registrar validadores únicamente desde la capa Application
 builder.Services.AddValidatorsFromAssembly(typeof(SegurosSura.Evaluaciones.Application.Componentes.Commands.Create.CreateComponenteCommand).Assembly);
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "SegurosSura.Evaluaciones.Api",
+        Version = "v1",
+        Description = "API para gestión de proyectos, componentes, complejidades y evaluaciones"
+    });
+
+    // Evitar colisiones de schemaId cuando existen tipos con el mismo nombre en distintos namespaces
+    options.CustomSchemaIds(type => (type.FullName ?? type.Name).Replace("+", "."));
+});
 
 // Database: Allow opting into SQL Server in Development via config/env flag; default InMemory in Dev
 builder.Services.AddDbContext<EvaluacionesDbContext>(options =>
@@ -101,6 +123,34 @@ if (!app.Environment.IsDevelopment())
 app.UseCors(app.Environment.IsDevelopment() ? "AllowAll" : "FrontendOrigins");
 app.UseAuthorization();
 app.MapControllers();
+
+// Endpoint de diagnóstico para listar rutas y métodos HTTP expuestos
+app.MapGet("/__endpoints", (IEnumerable<EndpointDataSource> srcs) =>
+    srcs.SelectMany(s => s.Endpoints)
+        .OfType<RouteEndpoint>()
+        .Select(e => new
+        {
+            Pattern = e.RoutePattern.RawText,
+            Methods = e.Metadata.OfType<HttpMethodMetadata>().FirstOrDefault()?.HttpMethods
+        })
+);
+
+// Plan B: MapPost explícito en Desarrollo para validar rápidamente la ruta exacta
+if (app.Environment.IsDevelopment())
+{
+    app.MapPost("/api/proyectos", async ([FromBody] ProyectosController.CreateProyectoRequest body, IMediator mediator, CancellationToken ct) =>
+    {
+        var created = await mediator.Send(new SegurosSura.Evaluaciones.Application.Proyectos.Commands.Create.CreateProyectoCommand(
+            body.Nombre,
+            body.Descripcion,
+            body.DiasEstimados,
+            body.Fecha,
+            body.HorasTotales,
+            body.Riesgo
+        ), ct);
+        return Results.Created($"/api/proyectos/{created.Id}", created);
+    });
+}
 
 // Ensure database is created when using InMemory provider in Development (no manual seed)
 if (app.Environment.IsDevelopment())

@@ -135,6 +135,11 @@ export class CrearComponent {
   // Modal crear proyecto
   abrirModalCrearProyecto(): void {
     this.nuevoNombreProyecto = '';
+    this.nuevaDescripcionProyecto = '';
+    this.nuevosDiasEstimados = null;
+    this.nuevaFecha = new Date().toISOString().substring(0,10);
+    this.nuevasHorasTotales = 0;
+    this.nuevoRiesgo = 0;
     this.state.showCrearProyectoModal$.next(true);
   }
 
@@ -143,6 +148,11 @@ export class CrearComponent {
   }
 
   nuevoNombreProyecto: string = '';
+  nuevaDescripcionProyecto: string = '';
+  nuevosDiasEstimados: number | null = null;
+  nuevaFecha: string | null = new Date().toISOString().substring(0,10);
+  nuevasHorasTotales: number | null = 0;
+  nuevoRiesgo: number | null = 0;
 
   guardarNuevoProyecto(): void {
     const nombre = (this.nuevoNombreProyecto || '').trim();
@@ -150,7 +160,15 @@ export class CrearComponent {
       alert('El nombre del proyecto debe tener al menos 3 caracteres.');
       return;
     }
-    this.dataService.createProyecto(nombre).pipe(
+    const payload = {
+      nombre,
+      descripcion: (this.nuevaDescripcionProyecto || '').trim() || undefined,
+      diasEstimados: this.nuevosDiasEstimados ?? undefined,
+      fecha: this.nuevaFecha ? new Date(this.nuevaFecha).toISOString() : undefined,
+      horasTotales: this.nuevasHorasTotales ?? undefined,
+      riesgo: this.nuevoRiesgo ?? undefined,
+    };
+    this.dataService.createProyecto(payload).pipe(
       tap(nuevo => {
         const curr = this.state.proyectos$.getValue();
         this.state.proyectos$.next([...curr, nuevo].sort((a,b) => a.nombre.localeCompare(b.nombre)));
@@ -171,7 +189,7 @@ export class CrearComponent {
 
     if (!nombreProyecto) { console.error('Proyecto no seleccionado'); return; }
 
-    const commandItems = items
+    const detalle = items
       .filter(it => it.componenteId && it.descripcion.trim() && it.complejidadId)
       .map(it => ({
         componenteId: it.componenteId!,
@@ -179,11 +197,19 @@ export class CrearComponent {
         descripcionTarea: it.descripcion.trim()
       }));
 
-    this.dataService.createEvaluacion(
-      nombreProyecto.trim(),
-      this.state.deltaRiesgoPct$.getValue(),
-      commandItems
-    ).pipe(
+    // Nuevo flujo: envío combinado proyecto + evaluación. Proyecto: solo nombre requerido.
+    const payload = {
+      proyecto: {
+        nombre: nombreProyecto.trim()
+        // Puedes ampliar: descripcion, diasEstimados, fecha, horasTotales, riesgo
+      },
+      evaluacion: {
+        deltaRiesgoPct: this.state.deltaRiesgoPct$.getValue() ?? null,
+        detalle
+      }
+    };
+
+    this.dataService.crearEvaluacionConProyecto(payload).pipe(
       tap(evaluacionId => this.router.navigate(['/evaluaciones', evaluacionId])),
       catchError(err => {
         console.error('Error al crear evaluación:', err);
